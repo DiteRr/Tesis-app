@@ -19,6 +19,7 @@ target 'strava01' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+
   target 'strava01Tests' do
     inherit! :complete
     # Pods for testing
