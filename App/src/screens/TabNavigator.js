@@ -4,7 +4,8 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 //Navigators
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 //Screens
 import ActivitiesScreen from './ActivitiesScreen';
@@ -30,9 +31,9 @@ function TabNavigator({route, navigation}) {
           component={ActivitiesScreen}
           initialParams={{id, refresh_token}}
           options={{
-            tabBarLabel: 'Activities',
+            tabBarLabel: 'Actividades',
             tabBarIcon: ({ white }) => (
-              <MaterialCommunityIcons name="lock" color= '#FFFFFF' size={26} />
+              <FontAwesome5 name="running" color="rgba(255, 255, 255, .9)" size={24} />
             ),
           }}
         />
@@ -42,9 +43,9 @@ function TabNavigator({route, navigation}) {
           initialParams={{id, refresh_token}}
           options={{
             title : "Estadisticas",
-            tabBarLabel: 'Statistics',
+            tabBarLabel: 'Estadísticas',
             tabBarIcon: ({ white }) => (
-              <MaterialCommunityIcons name="lock" color= '#FFFFFF' size={26} />
+              <FontAwesome5 name="chart-line" color= '#FFFFFF' size={26} />
             ),
           }}
         />

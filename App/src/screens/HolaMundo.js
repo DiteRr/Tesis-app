@@ -1,11 +1,28 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Button, Pressable} from 'react-native'
+import { authorize } from 'react-native-app-auth';
 
 function Holamundo() {
 
+    const handleClick = async () => {
+        config = {
+            clientId: '74995',
+            clientSecret: 'd6d2222bb093f8a3117a35aa428c045beac19e67',
+            redirectUrl: 'http://192.168.0.7:5000/strava_token',
+            serviceConfiguration: {
+              authorizationEndpoint: 'https://www.strava.com/oauth/mobile/authorize',
+              tokenEndpoint:
+                'https://www.strava.com/oauth/token?client_id=74995&client_secret=d6d2222bb093f8a3117a35aa428c045beac19e67',
+            },
+            scopes: ['activity:read_all'],
+        };
+      
+        const authState = await authorize(config)
+    }
     return (
         <View>
             <Text>Hola mundo</Text>
+            <Button title='Ingresar a strava' color="#841584" onPress={handleClick}></Button>
         </View>
     )
 }

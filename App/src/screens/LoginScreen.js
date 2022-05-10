@@ -10,50 +10,71 @@ import Loader from "react-native-modal-loader";
 //Componentes customizados
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
+//import WavyBackground from "react-native-wavy-background";
 
 //Imagenes
 import Logo from '../assets/logo.png'
 
 
-var API_URL = "http://192.168.0.10:5000/login"; 
+var IP = "http://146.83.216.251:5000"; 
 
 function LoginScreen({navigation}) {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('91213168');
+    const [password, setPassword] = useState('f0addde72af00b6a9c6aeb1671ce4bb4104ac852');
     const [showAlert, setShowAlert] = useState(false);
     const [loader, setLoader] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
 
+    //Validcación username
+    const validation = (user) => {
+        //vacio, valor numerico, id demasiado largo (>30),
+            if(user == ""){
+                ToastAndroid.show( "El ID de usuario es obligatorio", ToastAndroid.LONG, ToastAndroid.BOTTOM)
+                return false
+            }else if(isNaN(user)){
+                ToastAndroid.show( "El ID de usuario debe ser un número", ToastAndroid.LONG, ToastAndroid.BOTTOM)
+                return false
+            }else if(user.length > 30){
+                ToastAndroid.show( "El ID de usuario es demasiado largo", ToastAndroid.LONG, ToastAndroid.BOTTOM)
+                return false
+            }
+    
+            return true;
+            
+    }
 
     const handleClick = async ()  => {
-        setLoader(true)
+        //setLoader(true)
         var loginData ={id: username, password: password};
-        var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+        var headers = {'Content-Type': 'application/json'};
 
-        //Consulta verificación de datos login
-        const result = await fetch('http://192.168.0.10:5000/login', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(loginData)
-        });
-        const res = await result.json()
+        if(validation(username)){
+            //Consulta verificación de datos login
+            const result = await fetch(IP.concat('/login'), {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(loginData)
+            });
+            const res = await result.json()
+            console.log(res)
 
-        //Validación mensaje
-        switch(res['message']){
-            case 0:
-                alert("ID del usuario no valido o no registrado");
-                setLoader(false)
-                break;
-            case 1:
-                alert("Contraseña no valida");
-                setLoader(false)
-                break
-            case 2:
-                setLoader(false)
-                navigation.navigate('TabNavigator', {
-                    id: username,
-                    refresh_token: password,
-                })
+            //Validación mensaje
+            switch(res['message']){
+                case 0:
+                    alert("ID del usuario no valido o no registrado");
+                    setLoader(false)
+                    break;
+                case 1:
+                    alert("Contraseña no valida");
+                    setLoader(false)
+                    break
+                case 2:
+                    setLoader(false)
+                    navigation.navigate('TabNavigator', {
+                        id: username,
+                        refresh_token: password,
+                    })
+            }
         }
 
     }
@@ -65,7 +86,7 @@ function LoginScreen({navigation}) {
 
     const connectStrava = () => {
         console.log("conectar con strava")
-        const uri = 'http://192.168.0.10:5000/strava_authorize';
+        const uri = IP.concat('/strava_authorize');
         Linking.openURL(uri);
         setModalVisible(!modalVisible);
     }
@@ -109,12 +130,20 @@ function LoginScreen({navigation}) {
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
                             <Text style={styles.modalText}>Instrucciones:</Text>
-                            <Pressable
+                            <TouchableOpacity
+                                onPress={connectStrava}
+                            >
+                                <Image
+                                     source={require('../assets/btn_strava_connectwith_orange.png')}
+                                />
+                            </TouchableOpacity>
+                            
+                            {/*<Pressable
                                 style={({pressed}) => [{backgroundColor: pressed ? '#FFA680' : '#FC4C02' }, styles.buttonConnectStrava]}
                                 onPress={connectStrava}
                             >
                                 <Text style={styles.textStyleConnect}> Conectar con Strava </Text>
-                            </Pressable>
+                            </Pressable>*/}
                         </View>
                     </View>
                 </TouchableWithoutFeedback>

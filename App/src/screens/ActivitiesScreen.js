@@ -4,10 +4,15 @@ import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, 
 //Imagenes
 import Logo from '../assets/logo.png'
 
-const Item = ({data}) => {
+const IP = "http://146.83.216.251:5000"
+const Item = ({data, navigation, access_token}) => {
 
     const onClickItem = () => {
         console.log("Probando")
+        navigation.navigate('RegisterEffortsScreen', {
+            id_actividad : data.id_actividad,
+            access_token : access_token,
+        })
     }
     return (
         <TouchableOpacity style={styles.item} onPress={onClickItem}>
@@ -45,30 +50,17 @@ function ActivitiesScreen({route, navigation}) {
     useEffect(()  => {
         async function getActivities(){
 
-            //Update access_token
+            //Update access_token and getActivities
             var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
             var refresh_token_json ={'refresh_token': refresh_token};
 
-            const result = await fetch('http://192.168.0.10:5000/update_token', {
+            const result = await fetch(IP.concat('/update_token'), {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(refresh_token_json)
             });
-        
-            const res = await result.json()
-            //console.log(res['access_token'])
-            
-            //Fetch activities 
 
-            var access_token_json = {'access_token': res['access_token']};
-
-            const result_activities = await fetch('http://192.168.0.10:5000/activities_user', {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(access_token_json)
-                });
-    
-            const res_activities = await result_activities.json()
+            const res_activities = await result.json()
 
             setActivities(res_activities['activities'])
             setLoading(false)
@@ -80,7 +72,7 @@ function ActivitiesScreen({route, navigation}) {
     }, []);
 
     const renderItem = ({ item }) => (
-        <Item data={item} />
+        <Item data={item} navigation={navigation} access_token={access_token} />
     )
 
     if(loading){
