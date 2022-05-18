@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Button, Pressable} from 'react-native'
 import { authorize } from 'react-native-app-auth';
+import { Dropdown } from 'react-native-element-dropdown';
+import CustomDropDown from '../components/CustomDropDown'
+
+var SharedPreferences = require('react-native-shared-preferences');
 
 function Holamundo() {
 
@@ -21,6 +25,7 @@ function Holamundo() {
     }
     return (
         <View>
+            <CustomDropDown alternativas={["1","2","3"]}/>
             <Text>Hola mundo</Text>
             <Button title='Ingresar a strava' color="#841584" onPress={handleClick}></Button>
         </View>

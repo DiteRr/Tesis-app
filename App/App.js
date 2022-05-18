@@ -7,6 +7,7 @@ import LoginScreen from "./src/screens/LoginScreen"
 import TabNavigator from "./src/screens/TabNavigator"
 import RegisterEffortsScreen from "./src/screens/RegisterEffortsScreen"
 import Holamundo from "./src/screens/HolaMundo"
+import RegisterInjuriesScreen from "./src/screens/RegisterInjuriesScreen"
 
 //Navigator
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -52,6 +53,12 @@ function App() {
               options={{ headerShown: false}} 
               name="RegisterEffortsScreen" 
               component={RegisterEffortsScreen} 
+              initialParams={{}} 
+            />
+            <Stack.Screen 
+              options={{ headerShown: false}} 
+              name="RegisterInjuriesScreen" 
+              component={RegisterInjuriesScreen} 
               initialParams={{}} 
             />
           </Stack.Navigator>

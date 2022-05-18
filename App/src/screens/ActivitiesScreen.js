@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image} from 'react-native'
-
+import AsyncStorage from '@react-native-async-storage/async-storage'
+var SharedPreferences = require('react-native-shared-preferences');
 //Imagenes
 import Logo from '../assets/logo.png'
 
 const IP = "http://146.83.216.251:5000"
-const Item = ({data, navigation, access_token}) => {
+const Item = ({data, navigation, id_user, refresh_token}) => {
 
     const onClickItem = () => {
         console.log("Probando")
         navigation.navigate('RegisterEffortsScreen', {
-            id_actividad : data.id_actividad,
-            access_token : access_token,
+            data_actividad : data,
+            id_user : id_user,
+            refresh_token : refresh_token,
         })
     }
     return (
@@ -40,8 +42,8 @@ const renderSeparator = () => (
 
 
 function ActivitiesScreen({route, navigation}) {
+    console.log(route.params)
     const {id, refresh_token} = route.params;
-    const [access_token, setAccess_token] = useState('');
     const [activities, setActivities] = useState(null);
     const [prob, setProb] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -54,15 +56,55 @@ function ActivitiesScreen({route, navigation}) {
             var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
             var refresh_token_json ={'refresh_token': refresh_token};
 
-            const result = await fetch(IP.concat('/update_token'), {
+            var result = await fetch('http://146.83.216.251:5000/update_token', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(refresh_token_json)
             });
+            const res_activities = await result.json() //*Tiene que devolver el access_token 
 
-            const res_activities = await result.json()
+   
+            
+            
+            var lengthActivities = await AsyncStorage.getItem('length');
+            if(lengthActivities == null){ // Se inicializa por primera vez ingresando a la aplicación.
+                var id_user = {'id_user': id}
+                result = await fetch('http://146.83.216.251:5000/Actividades_registradas', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(id_user)
+                });
 
-            setActivities(res_activities['activities'])
+                const res_registerA = await result.json() //*Tiene que devolver el access_token 
+                console.log(res_registerA)
+                await AsyncStorage.setItem('length', ''+res_registerA['data'].length);
+                for(var i=0; i<res_registerA['data'].length; i++){
+                    await AsyncStorage.setItem(''+i, ''+res_registerA['data'][i]['id_activity']);
+                }
+                lengthActivities = res_registerA['data'].length
+            }
+     
+            const activitiesShow= []
+            var flag = 0
+            for(var i=0; i<res_activities['activities'].length; i++){
+                flag = 1
+                for(var j=0; j<parseInt(lengthActivities); j++){
+                    var id_actividad = await AsyncStorage.getItem(''+j);
+                    if(res_activities['activities'][i]['id_actividad'] == id_actividad){
+                        flag = 0
+                        break
+                    }
+                }   
+                if(flag){
+                    activitiesShow.push(res_activities['activities'][i])
+                }
+
+            }
+
+
+            setActivities(activitiesShow)
+            //setActivities(res_activities['activities'])
+            //console.log(res_activities)
             setLoading(false)
         }
 
@@ -72,7 +114,7 @@ function ActivitiesScreen({route, navigation}) {
     }, []);
 
     const renderItem = ({ item }) => (
-        <Item data={item} navigation={navigation} access_token={access_token} />
+        <Item data={item} navigation={navigation} id_user={id} refresh_token={refresh_token}/>
     )
 
     if(loading){

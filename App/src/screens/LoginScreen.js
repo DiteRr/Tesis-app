@@ -3,6 +3,7 @@ import {StyleSheet, Text, View, Image,  ToastAndroid, Pressable, Modal, Touchabl
         KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions, ImageBackground, Button} from 'react-native'
 
 import Loader from "react-native-modal-loader";
+import axios from 'axios';
 
 //import AwesomeAlert from 'react-native-awesome-alerts';
 //import Loader from "react-native-modal-loader";
@@ -16,14 +17,14 @@ import CustomButton from '../components/CustomButton';
 import Logo from '../assets/logo.png'
 
 
-var IP = "http://146.83.216.251:5000"; 
+const IP = "http://146.83.216.251:5000"; //
 
 function LoginScreen({navigation}) {
-    const [username, setUsername] = useState('91213168');
-    const [password, setPassword] = useState('f0addde72af00b6a9c6aeb1671ce4bb4104ac852');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [showAlert, setShowAlert] = useState(false);
     const [loader, setLoader] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
+    const [modalVisible, setModalVisible] = useState(true);
 
     //Validcación username
     const validation = (user) => {
@@ -50,15 +51,19 @@ function LoginScreen({navigation}) {
 
         if(validation(username)){
             //Consulta verificación de datos login
-            const result = await fetch(IP.concat('/login'), {
+            const result = await fetch('http://146.83.216.251:5000/login', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(loginData)
             });
             const res = await result.json()
-            console.log(res)
 
-            //Validación mensaje
+            //const resAxios = await axios.post('http://192.168.0.5:5000/login', JSON.stringify(loginData));
+            //const resAxios = await axios.post('http://192.168.0.5:5000/login', JSON.stringify(loginData), {headers : headers});
+            //const res = await resAxios.json()
+
+
+            //Validación mensaje            
             switch(res['message']){
                 case 0:
                     alert("ID del usuario no valido o no registrado");
@@ -70,7 +75,7 @@ function LoginScreen({navigation}) {
                     break
                 case 2:
                     setLoader(false)
-                    navigation.navigate('TabNavigator', {
+                    navigation.replace('TabNavigator', {
                         id: username,
                         refresh_token: password,
                     })
@@ -115,6 +120,7 @@ function LoginScreen({navigation}) {
                         </Text>
                     </Pressable>
                     {/*<Loader loading={loader} color="#6CBCF1" />*/}
+
                     <CustomButton  text = "Ingresar" onPress={handleClick}/>
                 </View>
             </TouchableWithoutFeedback>
@@ -227,6 +233,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 20,
         marginBottom: 300,
+    },
+    textForgetPass: {
+        marginLeft: 40,
     }
 })
 

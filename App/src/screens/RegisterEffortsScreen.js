@@ -1,56 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, FlatList, ScrollView, LogBox} from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 //import Slider from '@react-native-community/slider';
 import {Slider} from '@miblanchard/react-native-slider';
 import CustomButton from '../components/CustomButton';
 //import WavyBackground from "react-native-wavy-background";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CheckBox} from 'react-native-elements';
+import { createIconSetFromFontello } from 'react-native-vector-icons';
+import CustomSlider from '../components/CustomSlider'
+var SharedPreferences = require('react-native-shared-preferences');
 
-const Item = ({data, navigation, access_token}) => {
-    const [scale, setScale] = useState(0)
-    const [mark, setMark] = useState(0)
+var DATA = []
+    //-- ITEM --
+const Item = ({data, navigation}) => {
 
-    const renderAboveThumbComponent = () => {
-        return(
-            <View style={aboveThumbStyles.container}> 
-                <Text style = {aboveThumbStyles.text}> {scale} </Text> 
-            </View>
-        );
-        
-
-    };
-    const renderTrackMarkComponent = (value) => {
-        const currentSliderValue = value || (Array.isArray(value) && value[0]) || 0;
-            const style =
-                scale > Math.max(currentSliderValue)
-                    ? trackMarkStyles.activeMark
-                    : trackMarkStyles.inactiveMark;
-            return <View style={style} />;
+    const handleClick = (value) => {
+        let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
+        DATA[objIndex].respuesta = value.toString()
     }
 
-    return (
-       <SafeAreaView>
-           <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
-           <Text></Text>
-            <View style={styles.containerSlider}>
-                <Slider
-                        value={scale}
-                        onValueChange={setScale}
-                        maximumValue={100} 
-                        minimumValue={0}
-                        step={1}
-                        animateTransitions
-                        minimumTrackTintColor = "#FC4C02"
-                        thumbTintColor = "red"
-                        trackMarks={[100]}
-                        trackStyle = {styles.trackStyle} 
-                        renderTrackMarkComponent = {renderTrackMarkComponent}
-                        renderAboveThumbComponent={renderAboveThumbComponent}
-                />
+    // Logica para que tipo de respuesta mostrar en la preguntas de esfuerzo percibido 
+
+    //Preguntas slider primero
+    if(data.tipo_respuesta == "slider"){
+        return (
+            <View>
+                <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+                <Text></Text>
+                <CustomSlider valueChanged= {(value) => handleClick(value)}></CustomSlider>
             </View>
-       </SafeAreaView>
+            ); 
+    }
+    // Si existen otro tipo de preguntas ponerlas aca
+    return (
+        <View></View>
     );
 }
+    //-------------------------------------------------------------------
+
 
 //Renderiza el separador
 const renderSeparator = () => (
@@ -64,35 +52,101 @@ const renderSeparator = () => (
     
 
 function RegisterEffortsScreen({route, navigation}) {
-    console.log(route.params)
-    const {id_actividad, access_token } = route.params;
+    const {data_actividad, id_user, refresh_token} = route.params;
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true)
+    const [checkInjury, setCheckInjury] = useState(false);
+
+    console.log(route.params)
 
     useEffect(() => {
         //Recibir la data de las preguntas y tipo de respuesta las preguntas.
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
-        //JSON de prueba 
-        var dataJSONtest = [{id_pregunta : 1, pregunta : "¿Cómo calificaría el nivel de esfuerzo para completar el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 2, pregunta : "¿Cómo calificaría su calidad de sueño la noche anterior al entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 3, pregunta : "¿Como calificaria su motivación durante el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 4, pregunta : "¿Cómo calificaría su estrés durante el entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 5, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 6, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 7, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 8, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-        {id_pregunta : 9, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-        ]
 
-        setData(dataJSONtest)
-        setLoading(false)
+        async function getPregs(){
+            //Recibir la data de las preguntas y tipo de respuesta las preguntas.
+            var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+            var tipo_preg = {'tipo_preg': 'pep'}
+            const result = await fetch('http://146.83.216.251:5000/Preguntas', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(tipo_preg)
+            });
+
+            const res_pregs = await result.json()
+
+            DATA = []
+            for(var i=0; i<res_pregs['pregs'].length; i++){
+                var obj = {id_preg: res_pregs['pregs'][i]['id_pregunta'], respuesta : "0"}
+                DATA.push(obj)
+            }
+            console.log(DATA)
+            setData(res_pregs['pregs'])
+            /*JSON de prueba 
+            var dataJSONtest = [{id_pregunta : 1, pregunta : "¿Cómo calificaría el nivel de esfuerzo para completar el entrenamiento?", tipo_respuesta: "slider"},
+            {id_pregunta : 2, pregunta : "¿Cómo calificaría su calidad de sueño la noche anterior al entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 3, pregunta : "¿Como calificaria su motivación durante el entrenamiento?", tipo_respuesta: "slider"},
+            {id_pregunta : 4, pregunta : "¿Cómo calificaría su estrés durante el entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 5, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
+            {id_pregunta : 6, pregunta : "¿Cómo calificaría su fatiga general durante el entrenamiento?", tipo_respuesta: "slider"},
+            ]*/     
+            //setData(dataJSONtest)
+            setLoading(false)
+        }
+        getPregs()
     }, [])
 
-    const handleClick = () => {
-        alert("Datos guardados!")
-        console.log("datos guardados")
+    const onClickCheckBox =  () => {
+        setCheckInjury(!checkInjury)
+    }
+
+    const handleClick = async () => {
+        //Verificar si el usuario tuvo lesion.
+
+        if(checkInjury){
+            //Pasa a la siguiente actividad de registrar los datos asociados a lesión.
+            navigation.navigate('RegisterInjuriesScreen', {
+                dataEP: DATA,
+                data_actividad: data_actividad,
+                id_user: id_user,
+                refresh_token: refresh_token,
+            })
+            console.log("Pasando a la siguiente actividad")
+
+        }
+        else{    
+            var dataJSON = { 'data' : DATA, 'actividad' : data_actividad, 'id_user': id_user}
+            var headers = {'Content-Type': 'application/json'};
+            //Enviar respuestas 
+            const result = await fetch('http://146.83.216.251:5000/Guardar_datos', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(dataJSON)
+            });
+            const res = await result.json()
+
+            if(res['status'] == 200){
+                alert("Datos guardados satisfactoriamente")
+                //Guardar el archivo de la aplicación
+
+                const lengthActivities = await AsyncStorage.getItem('length');
+                //console.log("RegisterEffortsScreen", lengthActivities)
+                const NewlengthActivities = parseInt(lengthActivities) + 1
+                console.log(NewlengthActivities)
+                await AsyncStorage.setItem('length', '' + NewlengthActivities);
+                await AsyncStorage.setItem(''+ lengthActivities, ''+ data_actividad['id_actividad'])
+
+                navigation.reset({
+                    index : 0,
+                    routes: [{ name: 'TabNavigator', params:{id: id_user, refresh_token: refresh_token}}],
+                })
+            }
+            else{
+                alert("Error al guardar los datos!!!")
+            }
+        }
     }
 
     const renderItem = ({ item }) => (
-        <Item data={item} navigation={navigation} access_token={access_token} />
+        <Item data={item} navigation={navigation} />
     )
 
 
@@ -109,6 +163,11 @@ function RegisterEffortsScreen({route, navigation}) {
                     keyExtractor={item => item.id_pregunta}
                     ItemSeparatorComponent={renderSeparator}
                 />
+                <Text style={styles.preguntaStyle}> ¿Tuvo lesión durante la sesión de entrenamiento?</Text>
+                <Text></Text>
+                <View style={styles.containerSlider}>
+                    <CheckBox title="Sí" checked={checkInjury} onPress={onClickCheckBox}/>
+                </View>
             </View>
             <CustomButton  text = "Guardar datos" onPress={handleClick}/>
         </ScrollView>
@@ -155,41 +214,11 @@ const styles = StyleSheet.create({
     preguntaStyle: {
         fontWeight: "bold",
         fontSize: 18,
+        paddingLeft: 15,
     },
     containerFlatList: {
         paddingBottom :20
     }
 })
-
-const trackMarkStyles = StyleSheet.create({
-    activeMark: {
-        borderColor: 'red',
-        borderRadius: 20,   
-        borderWidth : 3,
-        left: 13,
-    },
-    inactiveMark: {
-        borderColor: '#FC4C02',
-        borderRadius: 20,
-        borderWidth : 3,
-        left: 13,
-    },
-});
-
-export const aboveThumbStyles = StyleSheet.create({
-    container: {
-        alignItems: 'center',
-        backgroundColor: 'white',
-        borderColor: 'white',
-        borderWidth: 1,
-        height: 20,
-        justifyContent: 'center',
-        left: -6,
-        width: 30,
-    },
-    text: {
-        fontWeight: "bold",
-    }
-});
 
 export default RegisterEffortsScreen;
