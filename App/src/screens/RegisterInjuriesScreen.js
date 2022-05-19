@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, SafeAreaView} from 'react-native'
+import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, SafeAreaView, ActivityIndicator} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import React from 'react'
 import { useEffect, useState } from 'react'
@@ -140,7 +140,11 @@ function RegisterInjuriesScreen({route, navigation}) {
 
   
   if(loading){
-    return <Text> Loading... </Text>
+    return(
+      <View style={styles.activityIndicator}>
+              <ActivityIndicator size="large" color="#FC4C02" />
+      </View>
+  )
   }
   return (
     <ScrollView>
@@ -201,7 +205,11 @@ const styles = StyleSheet.create({
   },
   containerFlatList: {
       paddingBottom :20
-  }
+  },
+  activityIndicator:{
+    flex: 1,
+    justifyContent: "center"
+},
 })
 
 

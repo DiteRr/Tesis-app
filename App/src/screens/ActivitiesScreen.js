@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image} from 'react-native'
+import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image, ActivityIndicator} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 var SharedPreferences = require('react-native-shared-preferences');
 //Imagenes
 import Logo from '../assets/logo.png'
+
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+
 
 const IP = "http://146.83.216.251:5000"
 const Item = ({data, navigation, id_user, refresh_token}) => {
@@ -118,7 +122,11 @@ function ActivitiesScreen({route, navigation}) {
     )
 
     if(loading){
-        return <Text> Loading ...</Text>
+        return(
+            <View style={styles.activityIndicator}>
+                    <ActivityIndicator size="large" color="#FC4C02" />
+            </View>
+        )
     }
 
     return (
@@ -163,7 +171,11 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 30,
         color: "#3C3C3C"
-    }
+    },
+    activityIndicator:{
+        flex: 1,
+        justifyContent: "center"
+    },
 })
 
 export default ActivitiesScreen;

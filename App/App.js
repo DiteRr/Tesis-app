@@ -12,43 +12,83 @@ import RegisterInjuriesScreen from "./src/screens/RegisterInjuriesScreen"
 //Navigator
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 //import WavyBackground from "react-native-wavy-background";
+
+//Components 
+import CustomHeader from './src/components/CustomHeader'
 
 const Stack = createNativeStackNavigator();
 
 function App() {
-    return (
+    
+    const [login, setLogin ] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [id, setUsername ] = useState('')
+    const [refresh_token, setPassword]= useState('')
+    
+    useEffect(() => {
+      
+      async function fetchData(){
+        var username = await AsyncStorage.getItem('username');
+        console.log(username)
+        if(username != null){
+          setLogin(true)
+          var password = await AsyncStorage.getItem('password');
+          setPassword(password)
+          setUsername(username)
+       }
+
+       setLoading(false)
+      }
+
+      fetchData()
+
+
+    }, []);
+
+    if(loading){
+      return( <Text></Text>);
+    }
+
+    console.log(login)
+    console.log(id)
+    console.log(refresh_token)
+    if(login){
+      console.log("LOGENADOMEEEEEEEEEEEEEEE...")
+      return(
         <NavigationContainer>
           <Stack.Navigator 
           screenOptions={{
             contentStyle: {backgroundColor:'#FFF'},
             headerBackVisible: false,
           }} 
-          initialRouteName="Home">
-            {/*<Stack.Screen options={{ headerShown: false}} name="HolaMundo" component={Holamundo} initialParams={{}} />*/}
+          initialRouteName="Home"
+          >
             <Stack.Screen 
-              options={{ headerShown: false}} 
-              name="Login" 
-              component={LoginScreen} 
-              initialParams={{}} 
-            />
-            <Stack.Screen 
-              options={{
-                title: 'Usuario',
-                headerTintColor: '#fff',
-                headerStyle: {
-                  backgroundColor: '#FC4C02',
-                },
-                contentStyle: {backgroundColor:'#FFF'},
-                headerTitleStyle: {
-                  fontSize: 18,
-                },
-                                
-              }} 
               name="TabNavigator" 
-              component={TabNavigator} 
-              initialParams={{}} 
+              component={TabNavigator}
+              options={
+                ({ route, navigation }) => ({ headerTitle: () => <CustomHeader title ={route.params.id} navigation={navigation}/>,
+                title: 'Usuario',
+                  headerTintColor: '#fff',
+                  headerStyle: {
+                    backgroundColor: '#FC4C02',
+                  },
+                  contentStyle: {backgroundColor:'#FFF'},
+                  headerTitleStyle: {
+                    fontSize: 18,
+                  }
+                })
+              }
+              initialParams={{id, refresh_token}} 
             />
+            <Stack.Screen 
+                options={{ headerShown: false}} 
+                name="Login" 
+                component={LoginScreen} 
+                initialParams={{}} 
+              />
             <Stack.Screen 
               options={{ headerShown: false}} 
               name="RegisterEffortsScreen" 
@@ -63,7 +103,58 @@ function App() {
             />
           </Stack.Navigator>
         </NavigationContainer>
-    );
+      );
+    }
+    else{
+      return (
+          <NavigationContainer>
+            <Stack.Navigator 
+            screenOptions={{
+              contentStyle: {backgroundColor:'#FFF'},
+              headerBackVisible: false,
+            }} 
+            initialRouteName="Home">
+              {/*<Stack.Screen options={{ headerShown: false}} name="HolaMundo" component={Holamundo} initialParams={{}} />*/}
+              <Stack.Screen 
+                options={{ headerShown: false}} 
+                name="Login" 
+                component={LoginScreen} 
+                initialParams={{}} 
+              />
+              <Stack.Screen 
+                options={
+                  ({ route, navigation }) => ({ headerTitle: () => <CustomHeader title ={route.params.id} navigation={navigation}/>,
+                  title: 'Usuario',
+                    headerTintColor: '#fff',
+                    headerStyle: {
+                      backgroundColor: '#FC4C02',
+                    },
+                    contentStyle: {backgroundColor:'#FFF'},
+                    headerTitleStyle: {
+                      fontSize: 18,
+                    }
+                  })
+                }
+                name="TabNavigator" 
+                component={TabNavigator} 
+                initialParams={{}} 
+              />
+              <Stack.Screen 
+                options={{ headerShown: false}} 
+                name="RegisterEffortsScreen" 
+                component={RegisterEffortsScreen} 
+                initialParams={{}} 
+              />
+              <Stack.Screen 
+                options={{ headerShown: false}} 
+                name="RegisterInjuriesScreen" 
+                component={RegisterInjuriesScreen} 
+                initialParams={{}} 
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+      );
+    }
 }
 
 const styles = StyleSheet.create({

@@ -16,6 +16,7 @@ import CustomButton from '../components/CustomButton';
 //Imagenes
 import Logo from '../assets/logo.png'
 
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const IP = "http://146.83.216.251:5000"; //
 
@@ -75,6 +76,9 @@ function LoginScreen({navigation}) {
                     break
                 case 2:
                     setLoader(false)
+                    await AsyncStorage.setItem('username', ''+ username);
+                    await AsyncStorage.setItem('password', ''+ password);
+                    
                     navigation.replace('TabNavigator', {
                         id: username,
                         refresh_token: password,
