@@ -13,7 +13,6 @@ import ActivitiesScreen from './ActivitiesScreen';
 import StatisticsScreen from './StatisticsScreen';
 
 //Components 
-import CustomHeader from '../components/CustomHeader'
 import { NavigationContainer } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
@@ -21,8 +20,6 @@ const Tab = createMaterialBottomTabNavigator();
 
 function TabNavigator({route, navigation}) {
   const {id, refresh_token} = route.params;
-
-  console.log("TabNavigator", navigation)
 
   const screenOptions = {
     unmountOnBlur: false,

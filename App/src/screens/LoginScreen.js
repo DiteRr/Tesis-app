@@ -12,13 +12,13 @@ import axios from 'axios';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 //import WavyBackground from "react-native-wavy-background";
+import {STRAVA_URI} from "../../constants"
 
 //Imagenes
 import Logo from '../assets/logo.png'
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const IP = "http://146.83.216.251:5000"; //
 
 function LoginScreen({navigation}) {
     const [username, setUsername] = useState('');
@@ -52,7 +52,7 @@ function LoginScreen({navigation}) {
 
         if(validation(username)){
             //Consulta verificación de datos login
-            const result = await fetch('http://146.83.216.251:5000/login', {
+            const result = await fetch(STRAVA_URI + 'login', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(loginData)
@@ -94,8 +94,8 @@ function LoginScreen({navigation}) {
     }
 
     const connectStrava = () => {
-        console.log("conectar con strava")
-        const uri = IP.concat('/strava_authorize');
+        console.log("Conectando con STRAVA")
+        const uri = STRAVA_URI+'strava_authorize';
         Linking.openURL(uri);
         setModalVisible(!modalVisible);
     }
@@ -139,8 +139,17 @@ function LoginScreen({navigation}) {
                 <TouchableWithoutFeedback>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <Text style={styles.modalText}>Instrucciones:</Text>
+                            <Text style={{fontSize: 24, fontWeight: "bold", textAlign: 'center', color: "#000"}}> Instrucciones{"\n"}</Text>
+                            <Text style={styles.modalText}>
+                            <Text style={{fontWeight: "bold"}}>1. </Text> Para darnos autorización necesitamos que se conecte a STRAVA con el botón "Connect with STRAVA", que lo redireccionará
+                            a la página de STRAVA desde su navegador predeterminado. Se tendrá que autenticar con sus credenciales de STRAVA y saldrá una ventana
+                            que le pedirá la autorización de los permisos. {"\n"}{"\n"}
+                            <Text style={{fontWeight: "bold"}}>2. </Text> Luego de conceder los permisos, se redireccionará a otra ventana con las credenciales para acceder a la aplicación. Cópielas y péguelas en
+                            la aplicación en las casillas correspondientes e ingrese a la aplicación.{"\n"}
+
+                            </Text>
                             <TouchableOpacity
+                                style={{alignSelf: 'center'}}
                                 onPress={connectStrava}
                             >
                                 <Image
@@ -206,10 +215,10 @@ const styles = StyleSheet.create({
         marginTop: 22
     },
     modalView: {
-        margin: 20,
+        margin: 50,
         backgroundColor: "white",
         borderRadius: 20,
-        padding: 35,
+        padding: 15,
         shadowColor: "#000",
         shadowOffset: {
           width: 0,
@@ -233,10 +242,10 @@ const styles = StyleSheet.create({
         fontSize: 15
     },
     modalText: {
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fontSize: 20,
-        marginBottom: 300,
+        color: "#000",
+        fontSize: 17,
+        marginLeft: 10,
+        marginBottom: 10,
     },
     textForgetPass: {
         marginLeft: 40,

@@ -12,11 +12,12 @@ import RegisterInjuriesScreen from "./src/screens/RegisterInjuriesScreen"
 //Navigator
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URI} from '@env'
 //import WavyBackground from "react-native-wavy-background";
 
 //Components 
-import CustomHeader from './src/components/CustomHeader'
+import Header from './src/components/Header'
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +32,6 @@ function App() {
       
       async function fetchData(){
         var username = await AsyncStorage.getItem('username');
-        console.log(username)
         if(username != null){
           setLogin(true)
           var password = await AsyncStorage.getItem('password');
@@ -51,11 +51,12 @@ function App() {
       return( <Text></Text>);
     }
 
-    console.log(login)
-    console.log(id)
-    console.log(refresh_token)
+    //console.log("API_URI", API_URI)
+    //console.log(login)
+    //console.log(id)
+    //console.log(refresh_token)
     if(login){
-      console.log("LOGENADOMEEEEEEEEEEEEEEE...")
+      console.log("Autenticación automatica")
       return(
         <NavigationContainer>
           <Stack.Navigator 
@@ -69,7 +70,7 @@ function App() {
               name="TabNavigator" 
               component={TabNavigator}
               options={
-                ({ route, navigation }) => ({ headerTitle: () => <CustomHeader title ={route.params.id} navigation={navigation}/>,
+                ({ route, navigation }) => ({ headerTitle: () => <Header title ={route.params.id} navigation={navigation}/>,
                 title: 'Usuario',
                   headerTintColor: '#fff',
                   headerStyle: {
@@ -123,7 +124,7 @@ function App() {
               />
               <Stack.Screen 
                 options={
-                  ({ route, navigation }) => ({ headerTitle: () => <CustomHeader title ={route.params.id} navigation={navigation}/>,
+                  ({ route, navigation }) => ({ headerTitle: () => <Header title ={route.params.id} navigation={navigation}/>,
                   title: 'Usuario',
                     headerTintColor: '#fff',
                     headerStyle: {

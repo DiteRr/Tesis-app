@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import React from 'react'
 import { useEffect, useState } from 'react'
 import CustomDropDown from '../components/CustomDropDown'
-
+import {STRAVA_URI} from "../../constants"
 //Componentes customizados
 import CustomButton from '../components/CustomButton';
 
@@ -16,9 +16,14 @@ const Item = ({data, navigation}) => {
   const [loading, setLoading] = useState(true)
   //const [response, setResponse] = useState("")
 
+  function decode_utf8(s) {
+    return decodeURIComponent(escape(s));
+  }
+
   useEffect(() => {
     var altern = []
     for(var i=0; i<data.alternativas.length; i++){
+      //const json = {label: decode_utf8(data.alternativas[i]), value: decode_utf8(data.alternativas[i])}
       const json = {label: data.alternativas[i], value: data.alternativas[i]}
       altern.push(json)
     }
@@ -29,7 +34,8 @@ const Item = ({data, navigation}) => {
   const handleClick = (value) => {   
     let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
     DATA[objIndex].respuesta = value.toString()
-  } 
+  }
+
 
   if(loading){
     return(
@@ -39,6 +45,7 @@ const Item = ({data, navigation}) => {
   if(data.tipo_respuesta == "dropdown"){
       return (
           <SafeAreaView>
+              {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
               <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
               <CustomDropDown alternativas={alternativas} valueChanged = {(value) => handleClick(value)}/>
           </SafeAreaView>
@@ -71,7 +78,7 @@ function RegisterInjuriesScreen({route, navigation}) {
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
         var tipo_preg = {'tipo_preg': 'pl'}
 
-        const result = await fetch('http://146.83.216.251:5000/Preguntas', {
+        const result = await fetch(STRAVA_URI + 'Preguntas', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(tipo_preg)
@@ -100,7 +107,7 @@ function RegisterInjuriesScreen({route, navigation}) {
     var dataJSON = { 'data' : dataArray, 'actividad': data_actividad, 'id_user': id_user}
     var headers = {'Content-Type': 'application/json'};
     //Enviar respuestas 
-    const result = await fetch('http://146.83.216.251:5000/Guardar_datos', {
+    const result = await fetch(STRAVA_URI + 'Guardar_datos', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(dataJSON)
@@ -171,7 +178,7 @@ const styles = StyleSheet.create({
       padding: 30,
       fontWeight: "bold",
       fontSize: 30,
-      color: "#3C3C3C"
+      color: "#000"
   }, 
   container: {
       alignItems: 'stretch',
@@ -199,9 +206,9 @@ const styles = StyleSheet.create({
       height: 3,
   },
   preguntaStyle: {
-      fontWeight: "bold",
       fontSize: 18,
       paddingLeft: 15,
+      color: "#000"
   },
   containerFlatList: {
       paddingBottom :20

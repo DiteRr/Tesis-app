@@ -9,8 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckBox} from 'react-native-elements';
 import { createIconSetFromFontello } from 'react-native-vector-icons';
 import CustomSlider from '../components/CustomSlider'
-var SharedPreferences = require('react-native-shared-preferences');
+import {STRAVA_URI} from "../../constants"
 
+var SharedPreferences = require('react-native-shared-preferences');
 var DATA = []
     //-- ITEM --
 const Item = ({data, navigation}) => {
@@ -20,12 +21,17 @@ const Item = ({data, navigation}) => {
         DATA[objIndex].respuesta = value.toString()
     }
 
+    function decode_utf8(s) {
+        return decodeURIComponent(escape(s));
+    }
+
     // Logica para que tipo de respuesta mostrar en la preguntas de esfuerzo percibido 
 
     //Preguntas slider primero
     if(data.tipo_respuesta == "slider"){
         return (
             <View>
+                {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
                 <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
                 <Text></Text>
                 <CustomSlider valueChanged= {(value) => handleClick(value)}></CustomSlider>
@@ -67,7 +73,7 @@ function RegisterEffortsScreen({route, navigation}) {
             //Recibir la data de las preguntas y tipo de respuesta las preguntas.
             var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
             var tipo_preg = {'tipo_preg': 'pep'}
-            const result = await fetch('http://146.83.216.251:5000/Preguntas', {
+            const result = await fetch(STRAVA_URI + 'Preguntas', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(tipo_preg)
@@ -116,7 +122,7 @@ function RegisterEffortsScreen({route, navigation}) {
             var dataJSON = { 'data' : DATA, 'actividad' : data_actividad, 'id_user': id_user}
             var headers = {'Content-Type': 'application/json'};
             //Enviar respuestas 
-            const result = await fetch('http://146.83.216.251:5000/Guardar_datos', {
+            const result = await fetch(STRAVA_URI + 'Guardar_datos', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(dataJSON)
@@ -188,7 +194,7 @@ const styles = StyleSheet.create({
         padding: 30,
         fontWeight: "bold",
         fontSize: 30,
-        color: "#3C3C3C"
+        color: "#000"
     }, 
     container: {
         alignItems: 'stretch',
@@ -216,9 +222,9 @@ const styles = StyleSheet.create({
         height: 3,
     },
     preguntaStyle: {
-        fontWeight: "bold",
         fontSize: 18,
         paddingLeft: 15,
+        color: "#000"
     },
     containerFlatList: {
         paddingBottom :20
