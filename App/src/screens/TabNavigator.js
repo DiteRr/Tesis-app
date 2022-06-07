@@ -20,6 +20,7 @@ const Tab = createMaterialBottomTabNavigator();
 
 function TabNavigator({route, navigation}) {
   const {id, refresh_token} = route.params;
+  console.log(id, refresh_token)
 
   const screenOptions = {
     unmountOnBlur: false,

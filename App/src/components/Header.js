@@ -20,7 +20,7 @@ export default function Header({title, navigation}) {
   const [modalVisible, setModalVisible] = useState(false);
 
   //console.log("CustomHeader", title)
-  //console.log("CustomHeader",navigation)
+  console.log("CustomHeader",navigation)
 
   const onChange = (event, selectedDate)  =>{
     if(event.type == "set"){
@@ -80,7 +80,7 @@ export default function Header({title, navigation}) {
     
       /* Android Only Properties */
       repeatType: 'day',
-      repeatTime: 1, // (optional) Increment of configured repeatType. Check 'Repeating Notifications' section for more info.
+      //repeatTime: 1, // (optional) Increment of configured repeatType. Check 'Repeating Notifications' section for more info.
       channelId: "1"
     });
     setModalVisible(true)
@@ -105,9 +105,9 @@ export default function Header({title, navigation}) {
             style={styles.icon}
             customButton={(<FontAwesome name="gear" color="rgba(255, 255, 255, .9)" size={26}/>)}
             destructiveIndex={1}
-            options={["Alarma", "Cerrar sesión", 'Cancelar']}
+            options={["Notificación recordatorio", "Cerrar sesión", 'Cancelar']}
             actions={[modalNotification, signOut]}/>
-        { show && (
+        { show ? (
             <TimePickerAndroid
               style= {{ backgroundColor : "white"}}
               testID='dateTimePicker'
@@ -121,7 +121,7 @@ export default function Header({title, navigation}) {
             >
             </TimePickerAndroid>
             
-        )}
+        ): null}
         <Modal
           animationType="fade"
           transparent={true}
@@ -133,13 +133,13 @@ export default function Header({title, navigation}) {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
             <Ionicons style={{alignSelf : "center"}} name="alarm" color="rgba(255, 79, 1, .9)" size={60} />
-            <Text style={{fontSize : 20, color : "#000", textAlign: 'center', lineHeight: 30}}> La alarma sonará {"\n"}
+            <Text style={{fontSize : 20, color : "#000", textAlign: 'center', lineHeight: 30}}> Notificación recordatorio {"\n"}
             
             <Text style={{fontWeight: "bold"}}>
               {date.getHours()< 10 ? '0'+date.getHours(): date.getHours()}:
               {date.getMinutes() < 10 ? '0'+ date.getMinutes():date.getMinutes()}{"\n"}
             </Text>
-            ¡Todos los días! {"\n"}
+              ¡Todos los días! {"\n"}
             </Text>        
             <Button style={{marginTop : 10, borderRadius: 20}} title="Aceptar" color="#FC4C02" onPress={() => setModalVisible(!modalVisible)}></Button>
             </View>

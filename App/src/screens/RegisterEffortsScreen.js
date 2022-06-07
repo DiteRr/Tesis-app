@@ -121,6 +121,7 @@ function RegisterEffortsScreen({route, navigation}) {
         else{    
             var dataJSON = { 'data' : DATA, 'actividad' : data_actividad, 'id_user': id_user}
             var headers = {'Content-Type': 'application/json'};
+            console.log(dataJSON)
             //Enviar respuestas 
             const result = await fetch(STRAVA_URI + 'Guardar_datos', {
                 method: 'POST',

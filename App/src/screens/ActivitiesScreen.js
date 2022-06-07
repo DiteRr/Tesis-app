@@ -8,6 +8,7 @@ import Logo from '../assets/logo.png'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {STRAVA_URI} from "../../constants"
 import PushNotification from "react-native-push-notification";
+import moment from "moment";
 
 
 
@@ -31,6 +32,54 @@ const Item = ({data, navigation, id_user, refresh_token}) => {
             refresh_token : refresh_token,
         })
     }
+
+    var date = new Date(data.start_date_local)
+    //Formato fecha
+    var meses = [
+        "Enero", "Febrero", "Marzo",
+        "Abril", "Mayo", "Junio", "Julio",
+        "Agosto", "Septiembre", "Octubre",
+        "Noviembre", "Diciembre"
+      ]
+    
+    var dias = [
+        "Lunes", "Martes", "Miercoles",
+        "Jueves", "Viernes", "Sabado",
+        "Domingo"
+    ]
+
+    const dia = date.getDate()
+    const mes = date.getMonth()
+    const ano = date.getFullYear()
+    const hrDay =moment(data.start_date_local).format('h:mm a')
+    const diaSemana =date.getDay()
+
+    const dateString = dias[diaSemana]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
+
+
+    //Formato string tiempo 
+    var hrs = 0
+    var restohrs = 0
+    var mins = 0
+    var segs = 0
+    var timeString = ""
+    if(data.elapsed_time >= 60){
+        if(data.elapsed_time >= 3600){
+            hrs = Math.floor(data_elapsed_time/3600)
+            restohrs = data.elapsed_time - (3600*hrs)
+            mins = Math.floor(restohrs/60)
+            segs = restohrs - 60*mins
+            timeString = hrs+"h"+" "+mins+"m"+" "+segs+"s"
+        }else{
+            mins = Math.floor(data.elapsed_time/60) 
+            segs = data.elapsed_time - 60*mins
+            timeString = mins+"m"+" "+segs+"s"
+        }
+    }else{
+        timeString = data.elapsed_time+"s"
+    }
+    //--------------------------
+
     return (
         <TouchableOpacity style={styles.item} onPress={onClickItem}>
             <View style={styles.view}>
@@ -38,7 +87,18 @@ const Item = ({data, navigation, id_user, refresh_token}) => {
                     style={styles.logo}
                     source={Logo}
                 />
-                <Text style={styles.title}>{data.name}</Text>
+                <View style={{flexDirection : 'column', textColor: 'black'}}>
+                    <Text style={styles.title}>{data.name}</Text>
+                    <Text style={{color: "#3C3C3C", marginBottom: 10}}> {dateString} </Text>
+                    <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
+                        <Text style={{color: "#3C3C3C"}}> Distancia </Text>
+                        <Text style={{color: "#3C3C3C"}}> Tiempo </Text>
+                    </View>
+                    <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
+                        <Text style={{color: "#3C3C3C"}}> {data.distance}m </Text>
+                        <Text style={{color: "#3C3C3C"}}> {timeString} </Text>
+                    </View>
+                </View>
             </View>
         </TouchableOpacity>
     );
@@ -62,7 +122,6 @@ function ActivitiesScreen({route, navigation}) {
     const [prob, setProb] = useState(true);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(true);
-
     //Se ejectua 1 sola vez al rederizar la aplicación por 1 vez.
     useEffect(()  => {
         getActivities()
@@ -81,11 +140,8 @@ function ActivitiesScreen({route, navigation}) {
             headers: headers,
             body: JSON.stringify(refresh_token_json)
         });
-        const res_activities = await result.json() //*Tiene que devolver el access_token 
-
-
-        
-        
+        const res_activities = await result.json() 
+       
         var lengthActivities = await AsyncStorage.getItem('length');
         if(lengthActivities == null){ // Se inicializa por primera vez ingresando a la aplicación.
             var id_user = {'id_user': id}
@@ -140,7 +196,7 @@ function ActivitiesScreen({route, navigation}) {
             </View>
         )
     }
-
+    console.log("paso por aca")
     return (
         <View style={styles.container}>
             <Text style={styles.titleText}> Actividades última semana. </Text>
@@ -170,10 +226,13 @@ const styles = StyleSheet.create({
     },
     view: {
         flexDirection: 'row',
+        textColor: 'black',
     },
     title: {
-        justifyContent: 'space-between',
-        fontSize: 15
+        fontSize: 17,
+        color: 'black',
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
     logo: {
         width: 70,

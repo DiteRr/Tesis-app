@@ -4,12 +4,20 @@ import {useFocusEffect} from '@react-navigation/native'
 import {LineChart} from "react-native-chart-kit";
 import {STRAVA_URI} from "../../constants"
 
+
+function decode_utf8(s) {
+  return decodeURIComponent(escape(s));
+}
+
+
 const Item = (data) => {
+  console.log(data["data"]["pregs"]["data"])
   const size = data["data"]["pregs"]["data"].length
   if(size != 0){
     //console.log(size)
     return(
       <View>
+        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>*/}
         <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>
         <LineChart
           data={{
@@ -61,11 +69,11 @@ const Item = (data) => {
           }}
           bezier
           style={{
-            marginVertical: 5,
+            marginVertical: 0,
             borderRadius: 16
           }}
         />
-        <Text style={{ fontSize: 13, textAlign: 'center', color: "#000", marginBottom: 10}}> Actividades realizadas</Text>
+        <Text style={{ fontSize: 14, fontStyle : 'italic', textAlign: 'center', color: "#000", marginBottom: 25}}> Actividades realizadas</Text>
       </View>
     )
   }
@@ -104,10 +112,10 @@ export default function StatisticsScreen({route, navigation}) {
         });
 
         const res = await result.json()
-        //console.log(res)
+        console.log(res)
         //console.log(res['data']['registros'][0])
 
-        setData(res['data']['registros'])
+        setData(res['registros'])
       }
       getRegisterActivities()
       //console.log("Clickeo el tab")

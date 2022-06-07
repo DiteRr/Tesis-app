@@ -118,7 +118,7 @@ function LoginScreen({navigation}) {
                     <Image source = {Logo} style={styles.logo} />
                     <CustomInput placeholder = "ID usuario" value={username} setValue={setUsername} secureTextEntry= {false}/>
                     <CustomInput placeholder = "Refresh token" value={password} setValue={setPassword} secureTextEntry= {true}/>
-                    <Pressable onPress={forgetPassword} style={({pressed}) => [{backgroundColor: pressed ? '#9b9b9b' : '#FFFFFF' }, styles.containerForgetPass]}>
+                    <Pressable onPress={forgetPassword} style={({pressed}) => [{backgroundColor: pressed ? '#FFFFFF' : '#FFFFFF' }, styles.containerForgetPass]}>
                         <Text style= {styles.textForgetPass}>
                             Olvidaste tus datos?
                         </Text>

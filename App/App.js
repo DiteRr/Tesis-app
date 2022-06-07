@@ -4,6 +4,7 @@ import { Dimensions, StyleSheet, Text, View, Button, Pressable, ImageBackground}
 
 //Screens 
 import LoginScreen from "./src/screens/LoginScreen"
+import LoginScreen2 from "./src/screens/LoginScreen2"
 import TabNavigator from "./src/screens/TabNavigator"
 import RegisterEffortsScreen from "./src/screens/RegisterEffortsScreen"
 import Holamundo from "./src/screens/HolaMundo"
@@ -21,6 +22,13 @@ import Header from './src/components/Header'
 
 const Stack = createNativeStackNavigator();
 
+
+const config = {
+  screens:{
+    LoginScreen2 : "Login",
+    TabNavigator : "TabNavigator",
+  }
+}
 function App() {
     
     const [login, setLogin ] = useState(false)
@@ -51,14 +59,15 @@ function App() {
       return( <Text></Text>);
     }
 
-    //console.log("API_URI", API_URI)
-    //console.log(login)
-    //console.log(id)
-    //console.log(refresh_token)
+    console.log("API_URI", API_URI)
+    console.log(login)
+    console.log(id)
+    console.log(refresh_token)
     if(login){
       console.log("Autenticación automatica")
       return(
-        <NavigationContainer>
+        <NavigationContainer
+        >
           <Stack.Navigator 
           screenOptions={{
             contentStyle: {backgroundColor:'#FFF'},
@@ -87,7 +96,7 @@ function App() {
             <Stack.Screen 
                 options={{ headerShown: false}} 
                 name="Login" 
-                component={LoginScreen} 
+                component={LoginScreen2} 
                 initialParams={{}} 
               />
             <Stack.Screen 
@@ -108,7 +117,8 @@ function App() {
     }
     else{
       return (
-          <NavigationContainer>
+          <NavigationContainer
+          >
             <Stack.Navigator 
             screenOptions={{
               contentStyle: {backgroundColor:'#FFF'},
@@ -119,7 +129,7 @@ function App() {
               <Stack.Screen 
                 options={{ headerShown: false}} 
                 name="Login" 
-                component={LoginScreen} 
+                component={LoginScreen2} 
                 initialParams={{}} 
               />
               <Stack.Screen 
