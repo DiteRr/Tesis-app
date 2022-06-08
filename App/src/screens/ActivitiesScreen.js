@@ -4,11 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 var SharedPreferences = require('react-native-shared-preferences');
 //Imagenes
 import Logo from '../assets/logo.png'
+import Check from '../assets/image-check.png'
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {STRAVA_URI} from "../../constants"
 import PushNotification from "react-native-push-notification";
 import moment from "moment";
+import { act } from 'react-test-renderer';
 
 
 
@@ -65,7 +67,7 @@ const Item = ({data, navigation, id_user, refresh_token}) => {
     var timeString = ""
     if(data.elapsed_time >= 60){
         if(data.elapsed_time >= 3600){
-            hrs = Math.floor(data_elapsed_time/3600)
+            hrs = Math.floor(data.elapsed_time/3600)
             restohrs = data.elapsed_time - (3600*hrs)
             mins = Math.floor(restohrs/60)
             segs = restohrs - 60*mins
@@ -196,10 +198,13 @@ function ActivitiesScreen({route, navigation}) {
             </View>
         )
     }
-    console.log("paso por aca")
+    console.log("activities", activities)
     return (
         <View style={styles.container}>
             <Text style={styles.titleText}> Actividades última semana. </Text>
+            { activities.length == 0 ?
+                <Text></Text>
+            :
             <FlatList
                 data={activities}
                 renderItem={renderItem}
@@ -208,7 +213,9 @@ function ActivitiesScreen({route, navigation}) {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={getActivities} colors={['#FC4C02']} />
                   }
-            />
+            />             
+            }
+
         </View>
     )
 }

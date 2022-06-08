@@ -20,7 +20,6 @@ export default function Header({title, navigation}) {
   const [modalVisible, setModalVisible] = useState(false);
 
   //console.log("CustomHeader", title)
-  console.log("CustomHeader",navigation)
 
   const onChange = (event, selectedDate)  =>{
     if(event.type == "set"){

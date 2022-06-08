@@ -23,8 +23,8 @@ const Item = ({data, navigation}) => {
   useEffect(() => {
     var altern = []
     for(var i=0; i<data.alternativas.length; i++){
-      //const json = {label: decode_utf8(data.alternativas[i]), value: decode_utf8(data.alternativas[i])}
-      const json = {label: data.alternativas[i], value: data.alternativas[i]}
+      const json = {label: decode_utf8(data.alternativas[i]), value: decode_utf8(data.alternativas[i])}
+      //const json = {label: data.alternativas[i], value: data.alternativas[i]}
       altern.push(json)
     }
     setAlternativas(altern)
@@ -45,8 +45,8 @@ const Item = ({data, navigation}) => {
   if(data.tipo_respuesta == "dropdown"){
       return (
           <SafeAreaView>
-              {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
-              <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+              <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
+              {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
               <CustomDropDown alternativas={alternativas} valueChanged = {(value) => handleClick(value)}/>
           </SafeAreaView>
           ); 

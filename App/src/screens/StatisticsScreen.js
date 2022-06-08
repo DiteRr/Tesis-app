@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Dimensions, FlatList, RefreshControl} from 'react-native'
+import { StyleSheet, Text, View, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, LogBox} from 'react-native'
 import React, {useState} from 'react'
 import {useFocusEffect} from '@react-navigation/native'
 import {LineChart} from "react-native-chart-kit";
 import {STRAVA_URI} from "../../constants"
+import moment from "moment";
 
 
 function decode_utf8(s) {
@@ -11,17 +12,23 @@ function decode_utf8(s) {
 
 
 const Item = (data) => {
-  console.log(data["data"]["pregs"]["data"])
+  //console.log(data["data"])
   const size = data["data"]["pregs"]["data"].length
   if(size != 0){
-    //console.log(size)
+    //console.log()
+    var labels = data["data"]["pregs"]["labels"].map(
+      function(label) {
+        return moment(new Date(label)).format('DD-MM-YYYY')
+      }
+    )
+    console.log("labels", labels)
     return(
       <View>
-        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>*/}
-        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>
+        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>
+        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>*/}
         <LineChart
           data={{
-            labels: data["data"]["pregs"]["labels"],
+            labels: labels,
             withLabels: false,
             datasets: [
               {
@@ -38,9 +45,10 @@ const Item = (data) => {
             ]
           }}
           width={Dimensions.get("window").width} // from react-native
-          height={200}
+          height={315}
           yAxisInterval={1} // optional, defaults to 1
-          withVerticalLabels={false}
+          withVerticalLabels={true}
+          verticalLabelRotation={35}
           yLabelsOffset={10}
           chartConfig={{
             backgroundColor: "#FFF",
@@ -73,7 +81,8 @@ const Item = (data) => {
             borderRadius: 16
           }}
         />
-        <Text style={{ fontSize: 14, fontStyle : 'italic', textAlign: 'center', color: "#000", marginBottom: 25}}> Actividades realizadas</Text>
+        {/* <Text style={{ fontSize: 13, fontStyle : 'italic', color: "#000", marginBottom: 25, marginLeft: 30}}> {labels[0]}</Text> */}
+        {/*<Text style={{ fontSize: 14, fontStyle : 'italic', textAlign: 'center', color: "#000", marginBottom: 25}}> Actividades realizadas</Text>*/}
       </View>
     )
   }
@@ -99,9 +108,11 @@ const renderSeparator = () => (
 export default function StatisticsScreen({route, navigation}) {
   const {id, refresh_token} = route.params;
   const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useFocusEffect(
     React.useCallback( () => {
+      LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
       async function getRegisterActivities(){
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
         var id_user = {'id_user': id}
@@ -116,6 +127,7 @@ export default function StatisticsScreen({route, navigation}) {
         //console.log(res['data']['registros'][0])
 
         setData(res['registros'])
+        setLoading(false)
       }
       getRegisterActivities()
       //console.log("Clickeo el tab")
@@ -127,18 +139,29 @@ export default function StatisticsScreen({route, navigation}) {
     <Item data={item} />
   )
 
-  return (
-    <View style={{flex: 1, backgroundColor: "#fff"}}>
-      <Text style={styles.titleText}> Estadisticas </Text>
-      <View>
-      <FlatList
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={item => item.id_preg}
-                ItemSeparatorComponent={renderSeparator}
-            />
+  if(loading){
+    return(
+      <View style={styles.activityIndicator}>
+              <ActivityIndicator size="large" color="#FC4C02" />
       </View>
-  </View>
+    )
+  }
+  return (
+    <ScrollView style={{backgroundColor: "#fff"}}>
+      <Text style={styles.titleText}>Estadisticas actividades registradas</Text>
+      <View>
+        { data[0]["pregs"]["data"].length != 0 ?
+              <FlatList
+                  data={data}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.id_preg}
+                  ItemSeparatorComponent={renderSeparator}
+              />
+              :
+              <Text></Text>
+        }
+      </View>
+    </ScrollView>
   )
 }
 
@@ -152,5 +175,9 @@ const styles = StyleSheet.create({
       fontWeight: "bold",
       fontSize: 30,
       color: "#000"
-  }, 
+  },
+  activityIndicator:{
+    flex: 1,
+    justifyContent: "center"
+  },
 })

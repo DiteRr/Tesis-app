@@ -31,8 +31,8 @@ const Item = ({data, navigation}) => {
     if(data.tipo_respuesta == "slider"){
         return (
             <View>
-                {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
-                <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+                <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
+                {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
                 <Text></Text>
                 <CustomSlider valueChanged= {(value) => handleClick(value)}></CustomSlider>
             </View>
