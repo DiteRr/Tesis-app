@@ -19,24 +19,8 @@ const Stack = createNativeStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 function TabNavigator({route, navigation}) {
-  const {id, refresh_token} = route.params;
-  console.log(id, refresh_token)
-
-  const screenOptions = {
-    unmountOnBlur: false,
-    headerShown: false,
-    tabBarStyle:{
-      backgroundColor:'#0000ff',
-      height:100,
-    },
-    tabBarItemStyle:{
-      backgroundColor:'#00ff00',
-      margin:5,
-      borderRadius:10,
-    }
-  };
-
-
+  const {id, refresh_token, access_token} = route.params;
+  console.log(id, refresh_token, access_token)
 
   return (
         <Tab.Navigator
@@ -49,7 +33,7 @@ function TabNavigator({route, navigation}) {
           <Tab.Screen
             name="Feed"
             component={ActivitiesScreen}
-            initialParams={{id, refresh_token}}
+            initialParams={{id, refresh_token, access_token}}
             options={{
               tabBarLabel: 'Actividades',
               tabBarIcon: ({ white }) => (

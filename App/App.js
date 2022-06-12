@@ -35,6 +35,7 @@ function App() {
     const [loading, setLoading] = useState(true)
     const [id, setUsername ] = useState('')
     const [refresh_token, setPassword]= useState('')
+    const [access_token, setToken]= useState('')
     
     useEffect(() => {
       
@@ -43,8 +44,10 @@ function App() {
         if(username != null){
           setLogin(true)
           var password = await AsyncStorage.getItem('password');
+          var token = await AsyncStorage.getItem('access_token');
           setPassword(password)
           setUsername(username)
+          setToken(token)
        }
 
        setLoading(false)
@@ -91,7 +94,7 @@ function App() {
                   }
                 })
               }
-              initialParams={{id, refresh_token}} 
+              initialParams={{id, refresh_token, access_token}} 
             />
             <Stack.Screen 
                 options={{ headerShown: false}} 

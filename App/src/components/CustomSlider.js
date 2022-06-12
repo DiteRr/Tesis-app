@@ -2,8 +2,10 @@ import { StyleSheet, Text, View, SafeAreaView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import {Slider} from '@miblanchard/react-native-slider';
 
-function CustomSlider(props) {
-    const {valueChanged} = props
+function CustomSlider({valueChanged, color}) {
+    //console.log(props)
+    //const {valueChanged} = props
+    //console.log(valueChanged)
     const [scale, setScale] = useState(0)
     const [mark, setMark] = useState(0)
 
@@ -39,8 +41,8 @@ function CustomSlider(props) {
                                 minimumValue={0}
                                 step={1}
                                 animateTransitions
-                                minimumTrackTintColor = "#FC4C02"
-                                thumbTintColor = "red"
+                                minimumTrackTintColor = {color}
+                                thumbTintColor = {color}
                                 trackMarks={[100]}
                                 trackStyle = {styles.trackStyle} 
                                 renderTrackMarkComponent = {renderTrackMarkComponent}
@@ -69,13 +71,13 @@ const styles = StyleSheet.create({
 
 const trackMarkStyles = StyleSheet.create({
     activeMark: {
-        borderColor: 'red',
+        borderColor: '#6E6E6E',
         borderRadius: 20,   
         borderWidth : 3,
         left: 13,
     },
     inactiveMark: {
-        borderColor: '#FC4C02',
+        borderColor: '#6E6E6E',
         borderRadius: 20,
         borderWidth : 3,
         left: 13,

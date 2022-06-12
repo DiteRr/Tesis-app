@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator} from 'react-native'
+import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator, SafeAreaView} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 //import Slider from '@react-native-community/slider';
 import {Slider} from '@miblanchard/react-native-slider';
 import CustomButton from '../components/CustomButton';
 //import WavyBackground from "react-native-wavy-background";
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckBox} from 'react-native-elements';
 import { createIconSetFromFontello } from 'react-native-vector-icons';
 import CustomSlider from '../components/CustomSlider'
@@ -27,17 +26,33 @@ const Item = ({data, navigation}) => {
 
     // Logica para que tipo de respuesta mostrar en la preguntas de esfuerzo percibido 
 
-    //Preguntas slider primero
+    //Preguntas slider
     if(data.tipo_respuesta == "slider"){
         return (
             <View>
-                <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
-                {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
+                {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
+                <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
                 <Text></Text>
-                <CustomSlider valueChanged= {(value) => handleClick(value)}></CustomSlider>
+                <CustomSlider valueChanged= {(value) => handleClick(value)} color={ data.tipo_preg == 'positiva' ? '#C3FC00' : 'red'}></CustomSlider>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <Text style= {{color: "black"}}> {data.valueStringMin} </Text>
+                    <Text style={{color: "black"}}> {data.valueStringMax} </Text>
+                </View>
+                <Text></Text>
             </View>
             ); 
     }
+
+      //Preguntas dropdown
+    if(data.tipo_respuesta == "dropdown"){
+        return (
+            <SafeAreaView>
+                {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
+                <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+                <CustomDropDown alternativas={data.alternativas} valueChanged = {(value) => handleClick(value)}/>
+            </SafeAreaView>
+        ); 
+    } 
     // Si existen otro tipo de preguntas ponerlas aca
     return (
         <View></View>
@@ -66,14 +81,14 @@ function RegisterEffortsScreen({route, navigation}) {
     console.log(route.params)
 
     useEffect(() => {
-        //Recibir la data de las preguntas y tipo de respuesta las preguntas.
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
 
         async function getPregs(){
+
             //Recibir la data de las preguntas y tipo de respuesta las preguntas.
             var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
             var tipo_preg = {'tipo_preg': 'pep'}
-            const result = await fetch(STRAVA_URI + 'Preguntas', {
+            const result = await fetch(STRAVA_URI + 'Preguntas2', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(tipo_preg)
@@ -81,20 +96,37 @@ function RegisterEffortsScreen({route, navigation}) {
 
             const res_pregs = await result.json()
 
+            function decode_utf8(s) {
+                return decodeURIComponent(escape(s));
+            }
+
+            //Crear arreglo DATA para guardar las respuestas de manera global.
             DATA = []
-            for(var i=0; i<res_pregs['pregs'].length; i++){
-                var obj = {id_preg: res_pregs['pregs'][i]['id_pregunta'], respuesta : "0"}
+            //Preguntas slider
+            for(var i=0; i<res_pregs['pregs']["preguntas_slider"].length; i++){
+                var obj = {id_preg: res_pregs['pregs']["preguntas_slider"][i]['id_pregunta'], respuesta : "0"}
                 DATA.push(obj)
             }
-            console.log(DATA)
-            setData(res_pregs['pregs'])
-            /*JSON de prueba 
-            var dataJSONtest = [{id_pregunta : 1, pregunta : "¿Cómo calificaría el nivel de esfuerzo para completar el entrenamiento?", tipo_respuesta: "slider"},
-            {id_pregunta : 2, pregunta : "¿Cómo calificaría su calidad de sueño la noche anterior al entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 3, pregunta : "¿Como calificaria su motivación durante el entrenamiento?", tipo_respuesta: "slider"},
-            {id_pregunta : 4, pregunta : "¿Cómo calificaría su estrés durante el entrenamiento?", tipo_respuesta: "slider"}, {id_pregunta : 5, pregunta : "¿Cómo calificaría su ánimo durante el entrenamiento?", tipo_respuesta: "slider"},
-            {id_pregunta : 6, pregunta : "¿Cómo calificaría su fatiga general durante el entrenamiento?", tipo_respuesta: "slider"},
-            ]*/     
-            //setData(dataJSONtest)
+
+            //Procesar dropdown
+            for(var i=0; i<res_pregs['pregs']["preguntas_dropdown"].length; i++){
+                var altern = []
+                var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : "0"}
+                //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
+                for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
+                //const json = {label: decode_utf8(data.alternativas[j]), value: decode_utf8(data.alternativas[j])}
+                const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+                altern.push(json)
+                }
+
+                //Agregar el nuevo formato de alternativas asociados a la data a recibir en el CustomDropDown.
+                res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'] = altern
+                DATA.push(obj)
+            }
+
+            //Unir preguntas en un mismo arreglo.
+            const pregs_total = res_pregs['pregs']["preguntas_slider"].concat(res_pregs['pregs']["preguntas_dropdown"])
+            setData(pregs_total)
             setLoading(false)
         }
         getPregs()

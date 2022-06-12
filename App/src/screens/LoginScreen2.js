@@ -33,7 +33,7 @@ function LoginScreen2({navigation}) {
     }
     
     //Guardar datos 
-
+    console.log("authState", authState)
     var loginData ={ID: authState.tokenAdditionalParameters.athlete.id, username: authState.tokenAdditionalParameters.athlete.username, firstname: authState.tokenAdditionalParameters.athlete.firstname, 
     lastname: authState.tokenAdditionalParameters.athlete.lastname, access_token: authState.accessToken, refresh_token: authState.refreshToken};
     
@@ -46,8 +46,11 @@ function LoginScreen2({navigation}) {
     });
     const res = await result.json()
     if(res['status']== 200){
+        console.log(authState.tokenAdditionalParameters.expires_at)
+        await AsyncStorage.setItem('expired_at', ''+ authState.tokenAdditionalParameters.expires_at.toString()+"000");
         await AsyncStorage.setItem('username', ''+ authState.tokenAdditionalParameters.athlete.id.toString());
         await AsyncStorage.setItem('password', ''+ authState.refreshToken.toString());
+        await AsyncStorage.setItem('access_token', ''+ authState.accessToken.toString());
         
         navigation.replace('TabNavigator', {
             id: authState.tokenAdditionalParameters.athlete.id,

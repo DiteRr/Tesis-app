@@ -9,11 +9,13 @@ const CustomDropDown = (props) => {
     const [isFocus, setIsFocus] = useState(false);
 
     valueChanged(value)
-    const data = [
+    
+    //Formato de la data a recibir
+    /*const data = [
         { "label": "lalo", "value": "1" },
         { "label": "hola", "value": "2" },
         { "label": "lela", "value": "3" },
-      ];
+      ];*/
     
 
     

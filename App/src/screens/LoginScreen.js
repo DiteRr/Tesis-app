@@ -27,7 +27,7 @@ function LoginScreen({navigation}) {
     const [loader, setLoader] = useState(false);
     const [modalVisible, setModalVisible] = useState(true);
 
-    //Validcación username
+    //Validacación username
     const validation = (user) => {
         //vacio, valor numerico, id demasiado largo (>30),
             if(user == ""){

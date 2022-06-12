@@ -24,8 +24,8 @@ const Item = (data) => {
     console.log("labels", labels)
     return(
       <View>
-        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>
-        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>*/}
+        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>*/}
+        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>
         <LineChart
           data={{
             labels: labels,
@@ -124,7 +124,6 @@ export default function StatisticsScreen({route, navigation}) {
 
         const res = await result.json()
         console.log(res)
-        //console.log(res['data']['registros'][0])
 
         setData(res['registros'])
         setLoading(false)

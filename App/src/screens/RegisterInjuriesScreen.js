@@ -14,43 +14,41 @@ var DATA = []
 const Item = ({data, navigation}) => {
   const [alternativas, setAlternativas] = useState(null)
   const [loading, setLoading] = useState(true)
-  //const [response, setResponse] = useState("")
-
-  function decode_utf8(s) {
-    return decodeURIComponent(escape(s));
-  }
-
-  useEffect(() => {
-    var altern = []
-    for(var i=0; i<data.alternativas.length; i++){
-      const json = {label: decode_utf8(data.alternativas[i]), value: decode_utf8(data.alternativas[i])}
-      //const json = {label: data.alternativas[i], value: data.alternativas[i]}
-      altern.push(json)
-    }
-    setAlternativas(altern)
-    setLoading(false)
-  }, [])
 
   const handleClick = (value) => {   
     let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
     DATA[objIndex].respuesta = value.toString()
   }
 
+  //Preguntas slider
+  if(data.tipo_respuesta == "slider"){
+    console.log("data_tipo_respuesta", data.tipo_preg)
+    return (
+        <View>
+            {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
+            <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+            <Text></Text>
+            <CustomSlider valueChanged= {(value) => handleClick(value)} color={ data.tipo_preg == 'positiva' ? '#C3FC00' : 'red'}></CustomSlider>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style= {{color: "black"}}> {data.valueStringMin} </Text>
+                <Text style={{color: "black"}}> {data.valueStringMax} </Text>
+            </View>
+            <Text></Text>
+        </View>
+        ); 
+  }
 
-  if(loading){
-    return(
-      <Text></Text>
-    )
-  }
+  //Preguntas dropdown
   if(data.tipo_respuesta == "dropdown"){
-      return (
-          <SafeAreaView>
-              <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
-              {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
-              <CustomDropDown alternativas={alternativas} valueChanged = {(value) => handleClick(value)}/>
-          </SafeAreaView>
-          ); 
-  }
+    return (
+        <SafeAreaView>
+            {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
+            <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+            <CustomDropDown alternativas={data.alternativas} valueChanged = {(value) => handleClick(value)}/>
+        </SafeAreaView>
+        ); 
+  } 
+
   // Si existen otro tipo de preguntas ponerlas aca
   return (
       <View></View>
@@ -78,22 +76,47 @@ function RegisterInjuriesScreen({route, navigation}) {
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
         var tipo_preg = {'tipo_preg': 'pl'}
 
-        const result = await fetch(STRAVA_URI + 'Preguntas', {
+        const result = await fetch(STRAVA_URI + 'Preguntas2', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(tipo_preg)
         });
 
         const res_pregs = await result.json()
+
+        function decode_utf8(s) {
+          return decodeURIComponent(escape(s));
+        }
+
+        //Crear arreglo DATA para guardar las respuestas de manera global.
         DATA = []
-        for(var i=0; i<res_pregs['pregs'].length; i++){
-          var obj = {id_preg: res_pregs['pregs'][i]['id_pregunta'], respuesta : "0"}
+
+        //Preguntas slider
+        for(var i=0; i<res_pregs['pregs']["preguntas_slider"].length; i++){
+            var obj = {id_preg: res_pregs['pregs']["preguntas_slider"][i]['id_pregunta'], respuesta : "0"}
+            DATA.push(obj)
+        }
+
+        //Procesar dropdown
+        for(var i=0; i<res_pregs['pregs']["preguntas_dropdown"].length; i++){
+          var altern = []
+          var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : "0"}
+          //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
+          for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
+            //const json = {label: decode_utf8(data.alternativas[j]), value: decode_utf8(data.alternativas[j])}
+            const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+            altern.push(json)
+          }
+
+          //Agregar el nuevo formato de alternativas asociados a la data a recibir en el CustomDropDown.
+          res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'] = altern
+
           DATA.push(obj)
         }
-        //console.log(DATA)
-        setData(res_pregs['pregs'])
 
-
+        //Unificar las preguntas en un solo arreglo
+        const pregs_total = res_pregs['pregs']["preguntas_slider"].concat(res_pregs['pregs']["preguntas_dropdown"])
+        setData(pregs_total)
         setLoading(false)
       }
       getPregs()
@@ -122,15 +145,6 @@ function RegisterInjuriesScreen({route, navigation}) {
       console.log(NewlengthActivities)
       await AsyncStorage.setItem('length', '' + NewlengthActivities);
       await AsyncStorage.setItem(''+ lengthActivities, ''+ data_actividad['id_actividad'])
-
-      /*navigation.replace('TabNavigator', {
-          id: id_user,
-          refresh_token: refresh_token,
-      })*/
-      /*navigation.reset('TabNavigator',{ 
-        id: id_user,
-        refresh_token: refresh_token,
-      })*/
 
       navigation.reset({
         index : 0,

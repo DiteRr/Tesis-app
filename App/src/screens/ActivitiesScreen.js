@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-var SharedPreferences = require('react-native-shared-preferences');
+
 //Imagenes
 import Logo from '../assets/logo.png'
 import Check from '../assets/image-check.png'
@@ -24,7 +24,7 @@ PushNotification.createChannel(
       vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
     });
 
-const Item = ({data, navigation, id_user, refresh_token}) => {
+const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
 
     const onClickItem = () => {
         console.log("Probando")
@@ -34,8 +34,10 @@ const Item = ({data, navigation, id_user, refresh_token}) => {
             refresh_token : refresh_token,
         })
     }
-
-    var date = new Date(data.start_date_local)
+    //console.log("start_date_local",data.start_date_local)
+    //console.log("start_date",data.start_date)
+    var date = new Date(data.start_date)
+    console.log("new_date", date)
     //Formato fecha
     var meses = [
         "Enero", "Febrero", "Marzo",
@@ -49,11 +51,12 @@ const Item = ({data, navigation, id_user, refresh_token}) => {
         "Jueves", "Viernes", "Sabado",
         "Domingo"
     ]
-
     const dia = date.getDate()
     const mes = date.getMonth()
     const ano = date.getFullYear()
-    const hrDay =moment(data.start_date_local).format('h:mm a')
+    const hour = date.getHours()
+    const hrDay =moment(data.start_date).local().format('h:mm a')
+    //console.log(hrDay)
     const diaSemana =date.getDay()
 
     const dateString = dias[diaSemana]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
@@ -119,30 +122,46 @@ const renderSeparator = () => (
 
 
 function ActivitiesScreen({route, navigation}) {
-    const {id, refresh_token} = route.params;
+    const {id, refresh_token, access_token} = route.params;
     const [activities, setActivities] = useState(null);
     const [prob, setProb] = useState(true);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(true);
+    const [accessToken, setAccessToken] = useState(access_token);
+
+    console.log(id, refresh_token, access_token)
     //Se ejectua 1 sola vez al rederizar la aplicación por 1 vez.
-    useEffect(()  => {
-        getActivities()
-       
+    useEffect( ()  => {
+        getActivities()     
     }, []);
 
 
     const getActivities = async () => {
-
         //Update access_token and getActivities
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
-        var refresh_token_json ={'refresh_token': refresh_token};
+        var res_activities = {}
 
-        var result = await fetch(STRAVA_URI + 'update_token', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(refresh_token_json)
-        });
-        const res_activities = await result.json() 
+        var dateNow = new Date()
+        if(await AsyncStorage.getItem('expired_at') - dateNow.getTime() > 0){
+            var result = await fetch(STRAVA_URI + 'update_token', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({'refresh_token': refresh_token})
+            });
+            
+            res_activities = await result.json() 
+            console.log(res_activities['expired_at'])
+            await AsyncStorage.setItem('expired_at', ''+ res_activities['expired_at'] + "000");
+            await AsyncStorage.setItem('access_token', ''+ res_activities['access_token']);
+            setAccessToken(res_activities['access_token'])
+        }else{
+            var result = await fetch(STRAVA_URI + '/activities_user', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({'access_token': access_token})
+            });
+            res_activities = await result.json() 
+        }
        
         var lengthActivities = await AsyncStorage.getItem('length');
         if(lengthActivities == null){ // Se inicializa por primera vez ingresando a la aplicación.
@@ -182,13 +201,11 @@ function ActivitiesScreen({route, navigation}) {
 
         setActivities(activitiesShow)
         setRefreshing(false)
-        //setActivities(res_activities['activities'])
-        //console.log(res_activities)
         setLoading(false)
     }
 
     const renderItem = ({ item }) => (
-        <Item data={item} navigation={navigation} id_user={id} refresh_token={refresh_token}/>
+        <Item data={item} navigation={navigation} id_user={id} refresh_token={refresh_token} accessToken={accessToken}/>
     )
 
     if(loading){
