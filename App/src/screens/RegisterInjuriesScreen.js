@@ -8,16 +8,21 @@ import {STRAVA_URI} from "../../constants"
 import CustomButton from '../components/CustomButton';
 
 
-
+//Arreglo global para guardar las respuestas de los usuarios.
 var DATA = []
-  //-- ITEM --
+
+//Items o preguntas
 const Item = ({data, navigation}) => {
-  const [alternativas, setAlternativas] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  //Valor de la respuesta
   const handleClick = (value) => {   
     let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
     DATA[objIndex].respuesta = value.toString()
+  }
+
+  function decode_utf8(s) {
+    return decodeURIComponent(escape(s));
   }
 
   //Preguntas slider
@@ -54,9 +59,8 @@ const Item = ({data, navigation}) => {
       <View></View>
   );
 }
-//-------------------------------------------------------------------
 
-//Renderiza el separador
+//Renderiza el separador de cada pregunta
 const renderSeparator = () => (
   <View
       style={{
@@ -72,8 +76,12 @@ function RegisterInjuriesScreen({route, navigation}) {
 
   useEffect( () => {
       LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+
+       //Obtener preguntas de lesión
       async function getPregs(){
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+        
+        //Formato JSON del tipo de preguntas que se requiere.
         var tipo_preg = {'tipo_preg': 'pl'}
 
         const result = await fetch(STRAVA_URI + 'Preguntas2', {
@@ -82,6 +90,7 @@ function RegisterInjuriesScreen({route, navigation}) {
             body: JSON.stringify(tipo_preg)
         });
 
+        //Obtención de preguntas
         const res_pregs = await result.json()
 
         function decode_utf8(s) {
@@ -91,7 +100,7 @@ function RegisterInjuriesScreen({route, navigation}) {
         //Crear arreglo DATA para guardar las respuestas de manera global.
         DATA = []
 
-        //Preguntas slider
+        //Preguntas slider, guardar ID + respuesta de cada pregunta slider.
         for(var i=0; i<res_pregs['pregs']["preguntas_slider"].length; i++){
             var obj = {id_preg: res_pregs['pregs']["preguntas_slider"][i]['id_pregunta'], respuesta : "0"}
             DATA.push(obj)
@@ -100,6 +109,7 @@ function RegisterInjuriesScreen({route, navigation}) {
         //Procesar dropdown
         for(var i=0; i<res_pregs['pregs']["preguntas_dropdown"].length; i++){
           var altern = []
+          //Guardar ID + respuesta de cada pregunta dropdown
           var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : "0"}
           //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
           for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
@@ -122,28 +132,32 @@ function RegisterInjuriesScreen({route, navigation}) {
       getPregs()
   }, [])
 
+  //Guardar datos
   const handleClick = async () => {
-    //console.log("Preguntas EP", dataEP)
-    //console.log("Preguntas lesión", DATA)
     var dataArray = dataEP.concat(DATA)
 
     var dataJSON = { 'data' : dataArray, 'actividad': data_actividad, 'id_user': id_user}
     var headers = {'Content-Type': 'application/json'};
+
     //Enviar respuestas 
     const result = await fetch(STRAVA_URI + 'Guardar_datos', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(dataJSON)
     });
+
     const res = await result.json()
+
+    //Verificar si las respuestas se guardaron.
     if(res['status'] == 200){
       alert("Datos guardados satisfactoriamente")
 
+      //Actualizar en numero de actividades registradas por el usuario.
       const lengthActivities = await AsyncStorage.getItem('length');
-      //console.log("RegisterEffortsScreen", lengthActivities)
       const NewlengthActivities = parseInt(lengthActivities) + 1
       console.log(NewlengthActivities)
       await AsyncStorage.setItem('length', '' + NewlengthActivities);
+      //Guardar actividad registrada por el usuario.
       await AsyncStorage.setItem(''+ lengthActivities, ''+ data_actividad['id_actividad'])
 
       navigation.reset({
@@ -152,9 +166,10 @@ function RegisterInjuriesScreen({route, navigation}) {
       })
     }
     else{
-      alert("Error al guardar los datos!!!")
+      alert("Error al guardar los datos!")
     }    
   }
+
   const renderItem = ({ item }) => (
     <Item data={item} navigation={navigation} />
   ) 
@@ -211,7 +226,6 @@ const styles = StyleSheet.create({
       lex: 1,
       marginLeft: 20,
       marginRight: 20,
-      //alignItems: 'stretch',
       justifyContent: 'center',
   },
   trackStyle: {

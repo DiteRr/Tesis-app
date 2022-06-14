@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator, SafeAreaView} from 'react-native'
+import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator, SafeAreaView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-//import Slider from '@react-native-community/slider';
 import {Slider} from '@miblanchard/react-native-slider';
 import CustomButton from '../components/CustomButton';
-//import WavyBackground from "react-native-wavy-background";
-import { CheckBox} from 'react-native-elements';
-import { createIconSetFromFontello } from 'react-native-vector-icons';
+import {CheckBox} from 'react-native-elements';
 import CustomSlider from '../components/CustomSlider'
 import {STRAVA_URI} from "../../constants"
 
-var SharedPreferences = require('react-native-shared-preferences');
+
+//Arreglo global para guardar las respuestas de los usuarios.
 var DATA = []
-    //-- ITEM --
+
+//Items o preguntas
 const Item = ({data, navigation}) => {
 
+    //Valor de la respuesta
     const handleClick = (value) => {
         let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
         DATA[objIndex].respuesta = value.toString()
@@ -23,8 +23,6 @@ const Item = ({data, navigation}) => {
     function decode_utf8(s) {
         return decodeURIComponent(escape(s));
     }
-
-    // Logica para que tipo de respuesta mostrar en la preguntas de esfuerzo percibido 
 
     //Preguntas slider
     if(data.tipo_respuesta == "slider"){
@@ -43,7 +41,7 @@ const Item = ({data, navigation}) => {
             ); 
     }
 
-      //Preguntas dropdown
+    //Preguntas dropdown
     if(data.tipo_respuesta == "dropdown"){
         return (
             <SafeAreaView>
@@ -53,15 +51,14 @@ const Item = ({data, navigation}) => {
             </SafeAreaView>
         ); 
     } 
+
     // Si existen otro tipo de preguntas ponerlas aca
     return (
         <View></View>
     );
 }
-    //-------------------------------------------------------------------
 
-
-//Renderiza el separador
+//Renderiza el separador de cada pregunta
 const renderSeparator = () => (
     <View
         style={{
@@ -78,15 +75,16 @@ function RegisterEffortsScreen({route, navigation}) {
     const [loading, setLoading] = useState(true)
     const [checkInjury, setCheckInjury] = useState(false);
 
-    console.log(route.params)
 
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
 
+        //Obtener preguntas de esfuezo percibido
         async function getPregs(){
 
-            //Recibir la data de las preguntas y tipo de respuesta las preguntas.
             var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+
+            //Formato JSON del tipo de preguntas que se requiere.
             var tipo_preg = {'tipo_preg': 'pep'}
             const result = await fetch(STRAVA_URI + 'Preguntas2', {
                 method: 'POST',
@@ -94,6 +92,7 @@ function RegisterEffortsScreen({route, navigation}) {
                 body: JSON.stringify(tipo_preg)
             });
 
+            //Obtención de preguntas
             const res_pregs = await result.json()
 
             function decode_utf8(s) {
@@ -102,7 +101,8 @@ function RegisterEffortsScreen({route, navigation}) {
 
             //Crear arreglo DATA para guardar las respuestas de manera global.
             DATA = []
-            //Preguntas slider
+
+            //Preguntas slider, guardar ID + respuesta de cada pregunta slider.
             for(var i=0; i<res_pregs['pregs']["preguntas_slider"].length; i++){
                 var obj = {id_preg: res_pregs['pregs']["preguntas_slider"][i]['id_pregunta'], respuesta : "0"}
                 DATA.push(obj)
@@ -111,12 +111,14 @@ function RegisterEffortsScreen({route, navigation}) {
             //Procesar dropdown
             for(var i=0; i<res_pregs['pregs']["preguntas_dropdown"].length; i++){
                 var altern = []
+                //Guardar ID + respuesta de cada pregunta dropdown
                 var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : "0"}
-                //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
+                //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown(Ver componente 
+                //CustomDropDown para el formato que se espera).
                 for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
-                //const json = {label: decode_utf8(data.alternativas[j]), value: decode_utf8(data.alternativas[j])}
-                const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
-                altern.push(json)
+                    //const json = {label: decode_utf8(data.alternativas[j]), value: decode_utf8(data.alternativas[j])}
+                    const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+                    altern.push(json)
                 }
 
                 //Agregar el nuevo formato de alternativas asociados a la data a recibir en el CustomDropDown.
@@ -129,16 +131,20 @@ function RegisterEffortsScreen({route, navigation}) {
             setData(pregs_total)
             setLoading(false)
         }
+
         getPregs()
+
     }, [])
 
+    //El usuarió tiene lesión
     const onClickCheckBox =  () => {
         setCheckInjury(!checkInjury)
     }
 
+    //Guardar datos
     const handleClick = async () => {
+        
         //Verificar si el usuario tuvo lesion.
-
         if(checkInjury){
             //Pasa a la siguiente actividad de registrar los datos asociados a lesión.
             navigation.navigate('RegisterInjuriesScreen', {
@@ -150,27 +156,31 @@ function RegisterEffortsScreen({route, navigation}) {
             console.log("Pasando a la siguiente actividad")
 
         }
-        else{    
+        else{
+            //El usuario no tuvo lesión, se guardan los datos.
+
+            //Formato JSON para guardar los datos.
             var dataJSON = { 'data' : DATA, 'actividad' : data_actividad, 'id_user': id_user}
             var headers = {'Content-Type': 'application/json'};
-            console.log(dataJSON)
+
             //Enviar respuestas 
             const result = await fetch(STRAVA_URI + 'Guardar_datos', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(dataJSON)
             });
+
             const res = await result.json()
 
+            //Verificar si las respuestas se guardaron.
             if(res['status'] == 200){
                 alert("Datos guardados satisfactoriamente")
-                //Guardar el archivo de la aplicación
-
+                
+                //Actualizar en numero de actividades registradas por el usuario.
                 const lengthActivities = await AsyncStorage.getItem('length');
-                //console.log("RegisterEffortsScreen", lengthActivities)
                 const NewlengthActivities = parseInt(lengthActivities) + 1
-                console.log(NewlengthActivities)
                 await AsyncStorage.setItem('length', '' + NewlengthActivities);
+                //Guardar actividad registrada por el usuario.
                 await AsyncStorage.setItem(''+ lengthActivities, ''+ data_actividad['id_actividad'])
 
                 navigation.reset({
@@ -179,7 +189,7 @@ function RegisterEffortsScreen({route, navigation}) {
                 })
             }
             else{
-                alert("Error al guardar los datos!!!")
+                alert("Error al guardar los datos!")
             }
         }
     }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {StyleSheet, Text, View, Image,  ToastAndroid, Pressable, Modal, TouchableOpacity, Linking,
         KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions, ImageBackground, Button} from 'react-native'
 
-import Loader from "react-native-modal-loader";
+//import Loader from "react-native-modal-loader";
 import axios from 'axios';
 
 //import AwesomeAlert from 'react-native-awesome-alerts';

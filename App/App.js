@@ -22,13 +22,6 @@ import Header from './src/components/Header'
 
 const Stack = createNativeStackNavigator();
 
-
-const config = {
-  screens:{
-    LoginScreen2 : "Login",
-    TabNavigator : "TabNavigator",
-  }
-}
 function App() {
     
     const [login, setLogin ] = useState(false)
@@ -39,21 +32,23 @@ function App() {
     
     useEffect(() => {
       
+      //Verificar si las credenciales estan guardades en memoria del dispostiva.
       async function fetchData(){
         var username = await AsyncStorage.getItem('username');
         if(username != null){
-          setLogin(true)
+          //El usuario se logeó anteriormente.
+
           var password = await AsyncStorage.getItem('password');
           var token = await AsyncStorage.getItem('access_token');
+          setLogin(true) 
           setPassword(password)
           setUsername(username)
           setToken(token)
        }
-
-       setLoading(false)
       }
 
       fetchData()
+      setLoading(false)
 
 
     }, []);
@@ -62,11 +57,8 @@ function App() {
       return( <Text></Text>);
     }
 
-    console.log("API_URI", API_URI)
-    console.log(login)
-    console.log(id)
-    console.log(refresh_token)
     if(login){
+      //Se encuentra almacenada las credenciales del usuario en memoria.
       console.log("Autenticación automatica")
       return(
         <NavigationContainer
@@ -119,9 +111,9 @@ function App() {
       );
     }
     else{
+      //No se encuentra almacenada las crencianles del usuario en memoria.
       return (
-          <NavigationContainer
-          >
+          <NavigationContainer>
             <Stack.Navigator 
             screenOptions={{
               contentStyle: {backgroundColor:'#FFF'},
@@ -170,15 +162,5 @@ function App() {
       );
     }
 }
-
-const styles = StyleSheet.create({
-  box:{
-    justifyContent: 'flex-end',
-    backgroundColor: '#fff'
-  },
-  bottomWavy: {
-    bottom: 0,
-  }
-})
 
 export default App;

@@ -13,7 +13,7 @@ import moment from "moment";
 import { act } from 'react-test-renderer';
 
 
-
+//Canal para la notificaciónes.
 PushNotification.createChannel(
     {
       channelId: "1", // (required)
@@ -24,8 +24,12 @@ PushNotification.createChannel(
       vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
     });
 
-const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
 
+//Items del FlatList o Actividades del usuario.
+const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
+    //Actividad de la última semana que no ha registrado el usuario.
+
+    //Click al Item o Actividad del FlatList.
     const onClickItem = () => {
         console.log("Probando")
         navigation.navigate('RegisterEffortsScreen', {
@@ -34,11 +38,10 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
             refresh_token : refresh_token,
         })
     }
-    //console.log("start_date_local",data.start_date_local)
-    //console.log("start_date",data.start_date)
+
+    //Fecha local
     var date = new Date(data.start_date)
-    console.log("new_date", date)
-    //Formato fecha
+
     var meses = [
         "Enero", "Febrero", "Marzo",
         "Abril", "Mayo", "Junio", "Julio",
@@ -51,18 +54,19 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
         "Jueves", "Viernes", "Sabado",
         "Domingo"
     ]
+
+    //Formato fecha
     const dia = date.getDate()
     const mes = date.getMonth()
     const ano = date.getFullYear()
     const hour = date.getHours()
     const hrDay =moment(data.start_date).local().format('h:mm a')
-    //console.log(hrDay)
     const diaSemana =date.getDay()
 
     const dateString = dias[diaSemana]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
+    //---------
 
-
-    //Formato string tiempo 
+    //Formato string tiempo de la actividad.
     var hrs = 0
     var restohrs = 0
     var mins = 0
@@ -109,7 +113,7 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
     );
 }
 
-//Renderiza el separador
+//Renderiza el separador de cada Item o Actividad.
 const renderSeparator = () => (
     <View
         style={{
@@ -119,8 +123,6 @@ const renderSeparator = () => (
     />
     );
     
-
-
 function ActivitiesScreen({route, navigation}) {
     const {id, refresh_token, access_token} = route.params;
     const [activities, setActivities] = useState(null);
@@ -130,59 +132,96 @@ function ActivitiesScreen({route, navigation}) {
     const [accessToken, setAccessToken] = useState(access_token);
 
     console.log(id, refresh_token, access_token)
-    //Se ejectua 1 sola vez al rederizar la aplicación por 1 vez.
+    
     useEffect( ()  => {
         getActivities()     
     }, []);
 
 
+    //Obtener actividades de los usuarios
     const getActivities = async () => {
-        //Update access_token and getActivities
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
         var res_activities = {}
 
+        /*
+        //Hora actual
         var dateNow = new Date()
-        if(await AsyncStorage.getItem('expired_at') - dateNow.getTime() > 0){
+        
+        console.log(await AsyncStorage.getItem('expired_at') - dateNow.getTime())
+        //Verificar si la fecha de expiración del token expiró.
+        if(await AsyncStorage.getItem('expired_at') - dateNow.getTime() < 0){
+
+            //Se solicitá una actualización del token y obtener las activiadades.
             var result = await fetch(STRAVA_URI + 'update_token', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({'refresh_token': refresh_token})
-            });
-            
+            });   
+            //Actividades del usuario + Nueva fecha expiración del token + Nuevo acces_token
             res_activities = await result.json() 
-            console.log(res_activities['expired_at'])
+            
+            //Actualizar la fecha de expiración del token en memoria
             await AsyncStorage.setItem('expired_at', ''+ res_activities['expired_at'] + "000");
+            
+            //Actualizar el token en memoria
             await AsyncStorage.setItem('access_token', ''+ res_activities['access_token']);
+
             setAccessToken(res_activities['access_token'])
         }else{
+            //El token no ha expirado
+
+            //Se solicita las actividades del usuario
             var result = await fetch(STRAVA_URI + '/activities_user', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({'access_token': access_token})
             });
+
+            //Actividades del usuario
             res_activities = await result.json() 
         }
+        */
+
+         //Se solicitá una actualización del token y obtener las activiadades.
+         var result = await fetch(STRAVA_URI + 'update_token', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({'refresh_token': refresh_token})
+        });   
+        //Actividades del usuario + Nueva fecha expiración del token + Nuevo acces_token
+        res_activities = await result.json() 
        
+        //Obtiene el número de actividades que ha registrado el usuario.
         var lengthActivities = await AsyncStorage.getItem('length');
-        if(lengthActivities == null){ // Se inicializa por primera vez ingresando a la aplicación.
+
+         // lengthActivities == null, cuando el usuario ingresa por primera vez a la aplicación.
+        if(lengthActivities == null){ 
             var id_user = {'id_user': id}
+
+            //Consultar por la actividades registradas por el usuario.
             result = await fetch(STRAVA_URI + 'Actividades_registradas', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(id_user)
             });
 
+            //Actividades registradas por el usuario.
             const res_registerA = await result.json()
-            console.log(res_registerA)
+
+            //Guardar largo de actividades registradas
             await AsyncStorage.setItem('length', ''+res_registerA['data'].length);
+
+            //Guardar actividades registradas  en memoria.
             for(var i=0; i<res_registerA['data'].length; i++){
                 await AsyncStorage.setItem(''+i, ''+res_registerA['data'][i]['id_activity']);
             }
             lengthActivities = res_registerA['data'].length
         }
- 
+
         const activitiesShow= []
         var flag = 0
+
+        //Matching de actividades no registradas por el usuario(Actividades a mostrar)
         for(var i=0; i<res_activities['activities'].length; i++){
             flag = 1
             for(var j=0; j<parseInt(lengthActivities); j++){
@@ -197,7 +236,6 @@ function ActivitiesScreen({route, navigation}) {
             }
 
         }
-
 
         setActivities(activitiesShow)
         setRefreshing(false)
@@ -215,7 +253,6 @@ function ActivitiesScreen({route, navigation}) {
             </View>
         )
     }
-    console.log("activities", activities)
     return (
         <View style={styles.container}>
             <Text style={styles.titleText}> Actividades última semana. </Text>
