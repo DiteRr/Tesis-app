@@ -44,11 +44,10 @@ function App() {
           setUsername(username)
           setToken(token)
        }
+       setLoading(false)
       }
 
       fetchData()
-      setLoading(false)
-
 
     }, []);
 
