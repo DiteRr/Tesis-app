@@ -63,7 +63,7 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
     const hrDay =moment(data.start_date).local().format('h:mm a')
     const diaSemana =date.getDay()
 
-    const dateString = dias[diaSemana]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
+    const dateString = dias[diaSemana-1]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
     //---------
 
     //Formato string tiempo de la actividad.
