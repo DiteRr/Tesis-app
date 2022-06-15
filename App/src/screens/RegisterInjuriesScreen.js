@@ -30,8 +30,8 @@ const Item = ({data, navigation}) => {
     console.log("data_tipo_respuesta", data.tipo_preg)
     return (
         <View>
-            {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
-            <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+            <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
+            {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
             <Text></Text>
             <CustomSlider valueChanged= {(value) => handleClick(value)} color={ data.tipo_preg == 'positiva' ? '#C3FC00' : 'red'}></CustomSlider>
             <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -47,8 +47,8 @@ const Item = ({data, navigation}) => {
   if(data.tipo_respuesta == "dropdown"){
     return (
         <SafeAreaView>
-            {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
-            <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+            <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
+            {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
             <CustomDropDown alternativas={data.alternativas} valueChanged = {(value) => handleClick(value)}/>
         </SafeAreaView>
         ); 
@@ -84,7 +84,7 @@ function RegisterInjuriesScreen({route, navigation}) {
         //Formato JSON del tipo de preguntas que se requiere.
         var tipo_preg = {'tipo_preg': 'pl'}
 
-        const result = await fetch(STRAVA_URI + 'Preguntas2', {
+        const result = await fetch(STRAVA_URI + 'Preguntas', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(tipo_preg)
@@ -113,8 +113,8 @@ function RegisterInjuriesScreen({route, navigation}) {
           var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : "0"}
           //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
           for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
-            //const json = {label: decode_utf8(data.alternativas[j]), value: decode_utf8(data.alternativas[j])}
-            const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+            const json = {label: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']), value: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'])}
+            //const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
             altern.push(json)
           }
 

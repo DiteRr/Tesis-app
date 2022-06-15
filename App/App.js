@@ -4,7 +4,6 @@ import { Dimensions, StyleSheet, Text, View, Button, Pressable, ImageBackground}
 
 //Screens 
 import LoginScreen from "./src/screens/LoginScreen"
-import LoginScreen2 from "./src/screens/LoginScreen2"
 import TabNavigator from "./src/screens/TabNavigator"
 import RegisterEffortsScreen from "./src/screens/RegisterEffortsScreen"
 import Holamundo from "./src/screens/HolaMundo"
@@ -91,7 +90,7 @@ function App() {
             <Stack.Screen 
                 options={{ headerShown: false}} 
                 name="Login" 
-                component={LoginScreen2} 
+                component={LoginScreen} 
                 initialParams={{}} 
               />
             <Stack.Screen 
@@ -124,7 +123,7 @@ function App() {
               <Stack.Screen 
                 options={{ headerShown: false}} 
                 name="Login" 
-                component={LoginScreen2} 
+                component={LoginScreen} 
                 initialParams={{}} 
               />
               <Stack.Screen 

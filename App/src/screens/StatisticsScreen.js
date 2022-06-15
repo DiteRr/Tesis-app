@@ -12,20 +12,21 @@ function decode_utf8(s) {
 
 
 const Item = (data) => {
-  //console.log(data["data"])
   const size = data["data"]["pregs"]["data"].length
+
   if(size != 0){
-    //console.log()
+
+    //Nuevo formato para el label de las fechas.
     var labels = data["data"]["pregs"]["labels"].map(
       function(label) {
         return moment(new Date(label)).format('DD-MM-YYYY')
       }
     )
-    console.log("labels", labels)
+
     return(
       <View>
-        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>*/}
-        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>
+        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>
+        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>*/}
         <LineChart
           data={{
             labels: labels,
@@ -110,12 +111,15 @@ export default function StatisticsScreen({route, navigation}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  //Hook cuando se accede a a la pestaña "Statistics" se actualiza.
   useFocusEffect(
     React.useCallback( () => {
       LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+
       async function getRegisterActivities(){
         var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
         var id_user = {'id_user': id}
+
         const result = await fetch(STRAVA_URI + 'Registros', {
             method: 'POST',
             headers: headers,
@@ -123,13 +127,12 @@ export default function StatisticsScreen({route, navigation}) {
         });
 
         const res = await result.json()
-        console.log(res)
 
         setData(res['registros'])
         setLoading(false)
       }
       getRegisterActivities()
-      //console.log("Clickeo el tab")
+
     }, []),
   )
 

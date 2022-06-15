@@ -8,18 +8,11 @@ import { NavigationHelpersContext } from '@react-navigation/native';
 import PushNotification from "react-native-push-notification";
 import TimePickerAndroid from '@react-native-community/datetimepicker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-//import DatePicker from 'react-native-custom-datetimepicker'
-//import DatePicker from 'react-native-date-picker'
-
-//DateTimePickerAndroid.open(params: AndroidNativeProps)
-//rDateTimePickerAndroid.dismiss(mode: AndroidNativeProps['mode'])
 
 export default function Header({title, navigation}) {
   const [date, setDate] = useState(new Date())
   const [show, setShow] = useState(false)
   const [modalVisible, setModalVisible] = useState(false);
-
-  //console.log("CustomHeader", title)
 
   const onChange = (event, selectedDate)  =>{
     if(event.type == "set"){
@@ -74,7 +67,7 @@ export default function Header({title, navigation}) {
     PushNotification.localNotificationSchedule({
       //... You can use all the options from localNotifications
       message: "¡Registra el esfuerzo percibido de tus actividades!", // (required)
-      date: alarm, // in 60 secs
+      date: alarm, // Hora de la alarma.
       allowWhileIdle: false, // (optional) set notification to work while on doze, default: false
     
       /* Android Only Properties */

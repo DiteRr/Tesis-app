@@ -8,12 +8,12 @@ import App from '../App';
 
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';
-import { render } from "@testing-library/react-native"
+import { render, fireEvent, waitfor, waitFor } from "@testing-library/react-native"
 
 
 //Screens
-import LoginScreen2 from '../src/screens/LoginScreen2';
-import ActivitiesScreen from '../src/screens/LoginScreen2';
+import LoginScreen from '../src/screens/LoginScreen';
+import ActivitiesScreen from '../src/screens/LoginScreen';
 import RegisterEffortsScreen from '../src/screens/RegisterEffortsScreen';
 import RegisterInjuriesScreen from '../src/screens/RegisterInjuriesScreen';
 import Statistics from '../src/screens/StatisticsScreen';
@@ -24,6 +24,7 @@ import CustomButton from '../src/components/CustomButton'
 import StatisticsScreen from '../src/screens/StatisticsScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native";
+import fetchMockJest from 'fetch-mock-jest';
 
 
 const navigation = { navigate: jest.fn() };
@@ -39,6 +40,14 @@ jest.mock('@miblanchard/react-native-slider');
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
+const authorizeSpy = jest.fn();
+
+jest.mock('react-native-app-auth', () => ({
+  authorize: authorizeSpy
+}));
+
+
+
 let component;
 
 describe("<App />", () => {
@@ -50,15 +59,37 @@ describe("<App />", () => {
 });
 
 
-describe("<LoginScreen2 />", () => {
-  component = render(<LoginScreen2 />);
+describe("<LoginScreen />", () => {
+  //component = render(<LoginScreen />);
+  //Setting up fetch mock before execution of any test
+  beforeAll(() => {
+    const endPoint `${API_URL}${LOGIN_ENDPOINT}`;
+    fetchMock.post(endPoint, {
+      status: 200,
+      body: JSON.stringify(LOGIN_EXPECTED_RESPONSE);
+    })
+  })
 
-  it("Renderiza correctamente", () =>{
-    expect(component).toBeDefined();
-  });
+
+  it("button connect Strava", () =>{
+    //const { getByTestId, getByText } = render(<LoginScreen />);
+    const navigate = jest.fn();
+    const route = { params: { id : '91213168', refresh_token: 'f0addde72af00b6a9c6aeb1671ce4bb4104ac852'}}  
+    
+    const screen = render(<LoginScreen navigation={{navigate}} route={route}/>);
+    await waitFor( () => {
+      fireEvent.press(screen.getByTestId("ConnectStrava.Button"));
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(endPoint, {
+      body : 
+    })
+
+  })
+
 });
 
-
+/*
 describe("<ActivitiesScreen />", () => {;
   it("Renderiza correctamente", () =>{
     const route = { params: { id : '91213168', refresh_token: 'f0addde72af00b6a9c6aeb1671ce4bb4104ac852'}}
@@ -116,3 +147,4 @@ describe("<RegisterInjuriesScreen />", () => {
     expect(component).toBeDefined();
   });
 });
+*/
