@@ -43,8 +43,10 @@ function App() {
           setPassword(password)
           setUsername(username)
           setToken(token)
+          setLoading(false)
+       }else{
+        setLoading(false) 
        }
-       setLoading(false)
       }
 
       fetchData()

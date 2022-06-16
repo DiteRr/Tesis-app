@@ -11,6 +11,7 @@ import {STRAVA_URI} from "../../constants"
 import PushNotification from "react-native-push-notification";
 import moment from "moment";
 import { act } from 'react-test-renderer';
+import {Query} from "../utils/Query"
 
 
 //Canal para la notificaciónes.
@@ -140,9 +141,6 @@ function ActivitiesScreen({route, navigation}) {
 
     //Obtener actividades de los usuarios
     const getActivities = async () => {
-        var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
-        var res_activities = {}
-
         /*
         //Hora actual
         var dateNow = new Date()
@@ -182,14 +180,9 @@ function ActivitiesScreen({route, navigation}) {
         }
         */
 
-         //Se solicitá una actualización del token y obtener las activiadades.
-         var result = await fetch(STRAVA_URI + 'update_token', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({'refresh_token': refresh_token})
-        });   
+        //Se solicitá una actualización del token y obtener las activiadades.
         //Actividades del usuario + Nueva fecha expiración del token + Nuevo acces_token
-        res_activities = await result.json() 
+        const res_activities = await Query('update_token', {'refresh_token': refresh_token})
        
         //Obtiene el número de actividades que ha registrado el usuario.
         var lengthActivities = await AsyncStorage.getItem('length');

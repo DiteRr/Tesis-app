@@ -27,6 +27,11 @@ import { useNavigation } from "@react-navigation/native";
 import fetchMockJest from 'fetch-mock-jest';
 
 
+//Functions
+import {Query} from "../src/utils/Query"
+import {AuthStrava} from "../src/utils/AuthStrava"
+
+
 const navigation = { navigate: jest.fn() };
 // El codigo ES6 debe compilarse antes de ejecutarse.
 // react-native-reanimated requiere integracion nativa
@@ -40,16 +45,17 @@ jest.mock('@miblanchard/react-native-slider');
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
-const authorizeSpy = jest.fn();
+var mockAuthorize = () => new AuthStrava()
 
 jest.mock('react-native-app-auth', () => ({
-  authorize: authorizeSpy
+  authorize: mockAuthorize,
 }));
 
-
+console.log("mockAuthorize", mockAuthorize)
 
 let component;
 
+/*
 describe("<App />", () => {
   component = render(<App/>);
 
@@ -57,36 +63,59 @@ describe("<App />", () => {
     expect(component).toBeDefined();
   });
 });
-
+*/
 
 describe("<LoginScreen />", () => {
   //component = render(<LoginScreen />);
   //Setting up fetch mock before execution of any test
-  beforeAll(() => {
+  /*beforeAll(() => {
     const endPoint `${API_URL}${LOGIN_ENDPOINT}`;
     fetchMock.post(endPoint, {
       status: 200,
       body: JSON.stringify(LOGIN_EXPECTED_RESPONSE);
     })
+  })*/
+  global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve({'status': 200}),
+      })
+  );
+
+  mockAuthorize = jest.fn(() => 
+      Promise.resolve({
+        json: () => Promise.resolve({'status': 200}),
+      })
+  )
+
+  beforeEach(() => {
+    fetch.mockClear();
+    mockAuthorize.mockClear();
+  });
+
+
+  it("Autorización aceptada", async () => {
+    const res= await mockAuthorize();
+    expect(res).toEqual({'status': 200});
   })
 
-
-  it("button connect Strava", () =>{
-    //const { getByTestId, getByText } = render(<LoginScreen />);
-    const navigate = jest.fn();
-    const route = { params: { id : '91213168', refresh_token: 'f0addde72af00b6a9c6aeb1671ce4bb4104ac852'}}  
-    
-    const screen = render(<LoginScreen navigation={{navigate}} route={route}/>);
-    await waitFor( () => {
-      fireEvent.press(screen.getByTestId("ConnectStrava.Button"));
-    })
-
-    expect(fetchMock).toHaveBeenCalledWith(endPoint, {
-      body : 
-    })
-
+  it("Autorización rechazada", async () => {
+    const res= await mockAuthorize();
+    expect(res).toEqual({'status': 200});
   })
 
+  it("Guardar datos", async () =>{
+    const res= await Query('save_user', {'id' : '1231231', 'user' : 'spacheco'});
+    expect(res).toEqual({'status': 200});
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("Error guardar datos", async () => {
+    //allows us to override the default mock behaviour just for this one test
+    fetch.mockImplementationOnce(() => Promise.reject("API is down"));
+    const res= await Query('save_user', {'id' : '1231231', 'user' : 'spacheco'});
+    expect(res).toEqual({'status': 404})
+
+  })
 });
 
 /*
@@ -94,7 +123,7 @@ describe("<ActivitiesScreen />", () => {;
   it("Renderiza correctamente", () =>{
     const route = { params: { id : '91213168', refresh_token: 'f0addde72af00b6a9c6aeb1671ce4bb4104ac852'}}
     const navigate = jest.fn();
-    omponent = render(<ActivitiesScreen route= {route} navigation={{ navigate }}  />);
+    component = render(<ActivitiesScreen route= {route} navigation={{ navigate }}  />);
     expect(component).toBeDefined();
   });
 });
