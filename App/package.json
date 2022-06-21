@@ -20,6 +20,7 @@
     "@react-navigation/native-stack": "^6.5.2",
     "axios": "^0.27.2",
     "moment": "^2.29.3",
+    "radio-buttons-react-native": "^1.0.4",
     "react": "17.0.2",
     "react-native": "0.68.1",
     "react-native-app-auth": "^6.4.3",
@@ -50,18 +51,21 @@
     "eslint": "^8.13.0",
     "fetch-mock-jest": "^1.5.1",
     "jest": "^27.5.1",
+    "jest-fetch-mock": "^3.0.3",
     "metro-react-native-babel-preset": "^0.70.1",
-    "react-test-renderer": "17.0.2"
+    "react-test-renderer": "^17.0.2"
   },
   "jest": {
     "preset": "react-native",
+    "automock": false,
+    "resetMocks": false,
+    "setupFiles": [
+      "./jest/setup.js"
+    ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/assetsTransformer.js",
       "\\.(css|less)$": "<rootDir>/assetsTransformer.js"
     },
-    "setupFiles": [
-      "./jest/setup.js"
-    ],
     "transformIgnorePatterns": [
       "node_modules/(?!@react-native|react-native|@miblanchard/react-native-slider/(.*))"
     ]

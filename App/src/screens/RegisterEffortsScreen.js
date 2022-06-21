@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator, SafeAreaView } from 'react-native'
+import { StyleSheet, Text, View, FlatList, ScrollView, LogBox, ActivityIndicator, SafeAreaView, Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {Slider} from '@miblanchard/react-native-slider';
 import CustomButton from '../components/CustomButton';
 import {CheckBox} from 'react-native-elements';
 import CustomSlider from '../components/CustomSlider'
 import {STRAVA_URI} from "../../constants"
-
-
-//Arreglo global para guardar las respuestas de los usuarios.
-var DATA = []
+import {Query} from "../utils/Query"
+import RadioButtonRN from 'radio-buttons-react-native';
 
 //Items o preguntas
-const Item = ({data, navigation}) => {
+const Item = ({data, navigation, changeResponse}) => {
 
     //Valor de la respuesta
-    const handleClick = (value) => {
-        let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
-        DATA[objIndex].respuesta = value.toString()
-    }
+    //const handleClick = (value) => {
+        //let objIndex = DATA.findIndex((obj => obj.id_preg == data.id_pregunta));
+        //DATA[objIndex].respuesta = value.toString()
+    //    changeResponse(value, data.id_pregunta)
+    //}
 
     function decode_utf8(s) {
         return decodeURIComponent(escape(s));
@@ -28,10 +27,10 @@ const Item = ({data, navigation}) => {
     if(data.tipo_respuesta == "slider"){
         return (
             <View>
-                <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
-                {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
+                {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
+                <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
                 <Text></Text>
-                <CustomSlider valueChanged= {(value) => handleClick(value)} color={ data.tipo_preg == 'positiva' ? '#C3FC00' : 'red'}></CustomSlider>
+                <CustomSlider valueChanged= {(value) => changeResponse(value, data.id_pregunta)} color={ data.tipo_preg == 'positiva' ? '#3E99D8' : 'red'} flag={true}></CustomSlider>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                     <Text style= {{color: "black"}}> {data.valueStringMin} </Text>
                     <Text style={{color: "black"}}> {data.valueStringMax} </Text>
@@ -71,10 +70,10 @@ const renderSeparator = () => (
 
 function RegisterEffortsScreen({route, navigation}) {
     const {data_actividad, id_user, refresh_token} = route.params;
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true)
-    const [checkInjury, setCheckInjury] = useState(false);
-
+    const [loading, setLoading] = React.useState(true)
+    const [data, setData] = React.useState(null);
+    const [respuestas, setRespuestas] = React.useState(null);
+    const [checkInjury, setCheckInjury] = React.useState(false);
 
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
@@ -82,25 +81,16 @@ function RegisterEffortsScreen({route, navigation}) {
         //Obtener preguntas de esfuezo percibido
         async function getPregs(){
 
-            var headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
-
-            //Formato JSON del tipo de preguntas que se requiere.
-            var tipo_preg = {'tipo_preg': 'pep'}
-            const result = await fetch(STRAVA_URI + 'Preguntas', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(tipo_preg)
-            });
-
             //Obtención de preguntas
-            const res_pregs = await result.json()
+            var tipo_preg = {'tipo_preg': 'pep'}
+            const res_pregs = await Query('Preguntas', tipo_preg)
 
             function decode_utf8(s) {
                 return decodeURIComponent(escape(s));
             }
 
             //Crear arreglo DATA para guardar las respuestas de manera global.
-            DATA = []
+            const DATA = []
 
             //Preguntas slider, guardar ID + respuesta de cada pregunta slider.
             for(var i=0; i<res_pregs['pregs']["preguntas_slider"].length; i++){
@@ -116,8 +106,8 @@ function RegisterEffortsScreen({route, navigation}) {
                 //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown(Ver componente 
                 //CustomDropDown para el formato que se espera).
                 for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
-                    const json = {label: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']), value: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'])}
-                    //const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+                    //const json = {label: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']), value: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'])}
+                    const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
                     altern.push(json)
                 }
 
@@ -128,6 +118,7 @@ function RegisterEffortsScreen({route, navigation}) {
 
             //Unir preguntas en un mismo arreglo.
             const pregs_total = res_pregs['pregs']["preguntas_slider"].concat(res_pregs['pregs']["preguntas_dropdown"])
+            setRespuestas(DATA)
             setData(pregs_total)
             setLoading(false)
         }
@@ -139,16 +130,21 @@ function RegisterEffortsScreen({route, navigation}) {
     //El usuarió tiene lesión
     const onClickCheckBox =  () => {
         setCheckInjury(!checkInjury)
+        setNotCheckInjury(!checkNotInjury)
+    }
+
+    const onClickCheckBox2 =  () => {
+        setCheckInjury(!checkInjury)
+        setNotCheckInjury(!checkNotInjury)
     }
 
     //Guardar datos
     const handleClick = async () => {
-        
         //Verificar si el usuario tuvo lesion.
         if(checkInjury){
             //Pasa a la siguiente actividad de registrar los datos asociados a lesión.
             navigation.navigate('RegisterInjuriesScreen', {
-                dataEP: DATA,
+                dataEP: respuestas,
                 data_actividad: data_actividad,
                 id_user: id_user,
                 refresh_token: refresh_token,
@@ -160,7 +156,7 @@ function RegisterEffortsScreen({route, navigation}) {
             //El usuario no tuvo lesión, se guardan los datos.
 
             //Formato JSON para guardar los datos.
-            var dataJSON = { 'data' : DATA, 'actividad' : data_actividad, 'id_user': id_user}
+            var dataJSON = { 'data' : respuestas, 'actividad' : data_actividad, 'id_user': id_user}
             var headers = {'Content-Type': 'application/json'};
 
             //Enviar respuestas 
@@ -174,7 +170,7 @@ function RegisterEffortsScreen({route, navigation}) {
 
             //Verificar si las respuestas se guardaron.
             if(res['status'] == 200){
-                alert("Datos guardados satisfactoriamente")
+                Alert.alert("¡Datos guardados satisfactoriamente!")
                 
                 //Actualizar en numero de actividades registradas por el usuario.
                 const lengthActivities = await AsyncStorage.getItem('length');
@@ -189,26 +185,41 @@ function RegisterEffortsScreen({route, navigation}) {
                 })
             }
             else{
-                alert("Error al guardar los datos!")
+                Alert.alert("Error al guardar los datos!")
             }
         }
     }
 
-    const renderItem = ({ item }) => (
-        <Item data={item} navigation={navigation} />
-    )
-
-
     if(loading){
         return(
             <View style={styles.activityIndicator}>
-                    <ActivityIndicator size="large" color="#FC4C02" />
+                    <ActivityIndicator testID='Progress.RegisterEfforts' size="large" color="#FC4C02" />
             </View>
         )
     }
+
+    const renderItem = ({ item }) => (
+        <Item data={item} navigation={navigation} changeResponse={(value, id_preg) => changeResponse(value, id_preg)}/>
+    )
+
+    const changeResponse = (value, id_preg) => {
+
+        let objIndex = respuestas.findIndex((obj => obj.id_preg == id_preg));
+        respuestas[objIndex].respuesta = value.toString()
+    }
+
+    const radioButtonCheck = (value) => {
+        if(value.label == "No"){
+            setCheckInjury(false)
+        }
+        else{
+            setCheckInjury(true)
+        }
+    }
+
     return (
         <ScrollView>
-            <Text style={styles.titleText}> Registro esfuerzo percibido. </Text>
+            <Text testID='Text.RegisterEfforts' style={styles.titleText}> Registro esfuerzo percibido. </Text>
             <View style={styles.containerFlatList}>
                 <FlatList
                     data={data}
@@ -218,11 +229,23 @@ function RegisterEffortsScreen({route, navigation}) {
                 />
                 <Text style={styles.preguntaStyle}> ¿Tuvo lesión durante la sesión de entrenamiento?</Text>
                 <Text></Text>
-                <View style={styles.containerSlider}>
+                {/*<View style={styles.containerSlider}>
                     <CheckBox title="Sí" checked={checkInjury} onPress={onClickCheckBox}/>
-                </View>
+                    <CheckBox title="No" checked={checkNotInjury} onPress={onClickCheckBox}/>
+                </View>*/}
+                <RadioButtonRN
+                    data={[
+                        {
+                          label: 'No'
+                         },
+                         {
+                          label: 'Sí'
+                         }
+                    ]}
+                    selectedBtn={(e) => radioButtonCheck(e)}
+                />
             </View>
-            <CustomButton  text = "Guardar datos" onPress={handleClick}/>
+            <CustomButton testID="SaveData.Button" text = "Guardar datos" onPress={handleClick}  />
         </ScrollView>
 
     )
@@ -253,10 +276,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     containerSlider: {
-        lex: 1,
         marginLeft: 20,
         marginRight: 20,
         //alignItems: 'stretch',
+        flexDirection: 'row',
         justifyContent: 'center',
     },
     trackStyle: {

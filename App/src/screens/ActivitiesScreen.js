@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl} from 'react-native'
+import React, {useRef, useEffect, useState } from 'react'
+import { StyleSheet, Text, View, Button, Pressable, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl, AppState} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 //Imagenes
@@ -12,6 +12,7 @@ import PushNotification from "react-native-push-notification";
 import moment from "moment";
 import { act } from 'react-test-renderer';
 import {Query} from "../utils/Query"
+import check from "../assets/check.gif"
 
 
 //Canal para la notificaciónes.
@@ -32,7 +33,6 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
 
     //Click al Item o Actividad del FlatList.
     const onClickItem = () => {
-        console.log("Probando")
         navigation.navigate('RegisterEffortsScreen', {
             data_actividad : data,
             id_user : id_user,
@@ -51,9 +51,8 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
       ]
     
     var dias = [
-        "Lunes", "Martes", "Miercoles",
+        "Domingo", "Lunes", "Martes", "Miercoles",
         "Jueves", "Viernes", "Sabado",
-        "Domingo"
     ]
 
     //Formato fecha
@@ -89,9 +88,8 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
         timeString = data.elapsed_time+"s"
     }
     //--------------------------
-
     return (
-        <TouchableOpacity style={styles.item} onPress={onClickItem}>
+        <TouchableOpacity style={styles.item} onPress={onClickItem} testID={`activity-row-${data.id_actividad}`}>
             <View style={styles.view}>
                 <Image
                     style={styles.logo}
@@ -126,16 +124,33 @@ const renderSeparator = () => (
     
 function ActivitiesScreen({route, navigation}) {
     const {id, refresh_token, access_token} = route.params;
-    const [activities, setActivities] = useState(null);
-    const [prob, setProb] = useState(true);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(true);
-    const [accessToken, setAccessToken] = useState(access_token);
+    const [loading, setLoading] = React.useState(true); //No cambiar la posición o se romperá el test de pruebas
+    const [activities, setActivities] = React.useState(null); //No cambiar la posición o se romperá el test de pruebas
 
-    console.log(id, refresh_token, access_token)
+    const [prob, setProb] = React.useState(true);
+    const [refreshing, setRefreshing] = React.useState(true);
+    const [accessToken, setAccessToken] = React.useState(access_token);
+    const appState = useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = useState(appState.current);
     
+    console.log("Estado de la aplicación", appState)
     useEffect( ()  => {
-        getActivities()     
+        getActivities()
+        const subscription = AppState.addEventListener("change", async (nextAppState) => {
+            if(appState.current.match(/inactive|background/) && nextAppState === "active"){
+                console.log("Activo appState", await AsyncStorage.getItem('active'))
+                if(await AsyncStorage.getItem('active') == '1'){
+                    getActivities() 
+                }
+            }
+      
+            appState.current = nextAppState;
+            setAppStateVisible(appState.current);
+          });
+
+        return () => {
+            subscription.remove();
+        };   
     }, []);
 
 
@@ -148,7 +163,6 @@ function ActivitiesScreen({route, navigation}) {
         console.log(await AsyncStorage.getItem('expired_at') - dateNow.getTime())
         //Verificar si la fecha de expiración del token expiró.
         if(await AsyncStorage.getItem('expired_at') - dateNow.getTime() < 0){
-
             //Se solicitá una actualización del token y obtener las activiadades.
             var result = await fetch(STRAVA_URI + 'update_token', {
                 method: 'POST',
@@ -163,18 +177,15 @@ function ActivitiesScreen({route, navigation}) {
             
             //Actualizar el token en memoria
             await AsyncStorage.setItem('access_token', ''+ res_activities['access_token']);
-
             setAccessToken(res_activities['access_token'])
         }else{
             //El token no ha expirado
-
             //Se solicita las actividades del usuario
             var result = await fetch(STRAVA_URI + '/activities_user', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({'access_token': access_token})
             });
-
             //Actividades del usuario
             res_activities = await result.json() 
         }
@@ -183,7 +194,7 @@ function ActivitiesScreen({route, navigation}) {
         //Se solicitá una actualización del token y obtener las activiadades.
         //Actividades del usuario + Nueva fecha expiración del token + Nuevo acces_token
         const res_activities = await Query('update_token', {'refresh_token': refresh_token})
-       
+    
         //Obtiene el número de actividades que ha registrado el usuario.
         var lengthActivities = await AsyncStorage.getItem('length');
 
@@ -192,14 +203,7 @@ function ActivitiesScreen({route, navigation}) {
             var id_user = {'id_user': id}
 
             //Consultar por la actividades registradas por el usuario.
-            result = await fetch(STRAVA_URI + 'Actividades_registradas', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(id_user)
-            });
-
-            //Actividades registradas por el usuario.
-            const res_registerA = await result.json()
+            const res_registerA = await Query('Actividades_registradas', id_user)
 
             //Guardar largo de actividades registradas
             await AsyncStorage.setItem('length', ''+res_registerA['data'].length);
@@ -230,6 +234,14 @@ function ActivitiesScreen({route, navigation}) {
 
         }
 
+        console.log("ActivitiesShow", activitiesShow)
+        if(activitiesShow.length == 0){
+            console.log("DEBERIA PASAR POR ACAAAAAAAAAAA!!!!!!!!!!!!!!!!!1", activitiesShow)
+            await AsyncStorage.setItem('active', '1');
+        }else{
+            await AsyncStorage.setItem('active', '0');
+        }
+
         setActivities(activitiesShow)
         setRefreshing(false)
         setLoading(false)
@@ -242,25 +254,40 @@ function ActivitiesScreen({route, navigation}) {
     if(loading){
         return(
             <View style={styles.activityIndicator}>
-                    <ActivityIndicator size="large" color="#FC4C02" />
+                    <ActivityIndicator testID='Progress.Activity' size="large" color="#FC4C02" />
             </View>
         )
     }
+
+    console.log(activities)
     return (
-        <View style={styles.container}>
-            <Text style={styles.titleText}> Actividades última semana. </Text>
-            { activities.length == 0 ?
-                <Text></Text>
+        <View style={[styles.container, activities.length <= 1 && {justifyContent: "flex-start",}]}>
+            <Text testID='Text.Activity' style={styles.titleText}> Actividades última semana. </Text>
+            { activities.length < 1 ?
+                <View>
+                    <Image 
+                        style={styles.image}
+                        source={require('../assets/icono-check.png')}
+                    />
+                    {/*<Image 
+                        style={styles.image}
+                        source={{
+                            uri: 'https://c.tenor.com/_4K_0sndwtEAAAAi/orange-white.gif'
+                        }}
+                    />*/}
+                    <Text style={{fontSize: 17, fontWeight: "bold", textAlign: 'center'}}> ¡Registraste todas tus actividades!</Text>
+                    <Text style={{fontSize: 17, fontWeight: "bold", textAlign: 'center'}}> ¡Regresa cuando hayas realizado una nueva actividad!</Text>
+                </View>
             :
-            <FlatList
-                data={activities}
-                renderItem={renderItem}
-                keyExtractor={item => item.id_actividad}
-                ItemSeparatorComponent={renderSeparator}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={getActivities} colors={['#FC4C02']} />
-                  }
-            />             
+                <FlatList
+                    data={activities}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id_actividad}
+                    ItemSeparatorComponent={renderSeparator}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={getActivities} colors={['#FC4C02']} />
+                    }
+                />             
             }
 
         </View>
@@ -303,6 +330,12 @@ const styles = StyleSheet.create({
     activityIndicator:{
         flex: 1,
         justifyContent: "center"
+    },
+    image: {
+        width: 200,
+        height: 200,
+        marginTop: 100,
+        alignSelf: 'center'
     },
 })
 

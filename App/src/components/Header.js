@@ -83,7 +83,7 @@ export default function Header({title, navigation}) {
       console.log("cerrar sesion")
       await AsyncStorage.removeItem('username');
       await AsyncStorage.removeItem('password');
-      navigation.navigate("Login")
+      navigation.replace("Login")
 
   }
 

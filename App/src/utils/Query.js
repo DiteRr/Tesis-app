@@ -4,7 +4,7 @@ import React from 'react'
 
 async function Query(base, data) {
     const headers = {'Content-Type': 'application/json'};
-    console.log("URI", STRAVA_URI + base)
+    //console.log("URI", STRAVA_URI + base)
     try{
         const result = await fetch(STRAVA_URI + base, {
             method: 'POST',

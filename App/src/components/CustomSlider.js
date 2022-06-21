@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import {Slider} from '@miblanchard/react-native-slider';
 
-function CustomSlider({valueChanged, color}) {
+function CustomSlider({valueChanged, color, flag}) {
     //console.log(props)
     //const {valueChanged} = props
     //console.log(valueChanged)
@@ -33,22 +33,49 @@ function CustomSlider({valueChanged, color}) {
   return (
     <View>
         <SafeAreaView>
+                    { flag == true ?
                     <View style={styles.containerSlider}>
                         <Slider
+                            value={scale}
+                            onValueChange={setScale}
+                            maximumValue={100} 
+                            minimumValue={0}
+                            step={1}
+                            animateTransitions
+                            minimumTrackTintColor = {color}
+                            thumbTintColor = {color}
+                            trackMarks={[100]}
+                            trackStyle = {styles.trackStyle} 
+                            renderTrackMarkComponent = {renderTrackMarkComponent}
+                            renderAboveThumbComponent={renderAboveThumbComponent}
+                        />
+                    </View>
+                    :
+                        <View style={styles.containerSlider}>
+                            <Slider
                                 value={scale}
                                 onValueChange={setScale}
-                                maximumValue={100} 
-                                minimumValue={0}
+                                maximumValue={5} 
+                                minimumValue={1}
                                 step={1}
                                 animateTransitions
                                 minimumTrackTintColor = {color}
                                 thumbTintColor = {color}
-                                trackMarks={[100]}
-                                trackStyle = {styles.trackStyle} 
-                                renderTrackMarkComponent = {renderTrackMarkComponent}
+                                trackMarks={[1,2,3,4,5]}
+                                trackStyle = {styles.trackStyle}
+                                //renderTrackMarkComponent = {renderTrackMarkComponent}
+                                renderTrackMarkComponent = {(value, color) => {
+                                    const currentSliderValue = value || (Array.isArray(value) && value[0]) || 0;
+                                    const style =
+                                        scale > Math.max(currentSliderValue)
+                                            ? { borderColor: 'red', borderWidth : 3, left: 13}
+                                            : { borderColor: 'red', borderWidth : 3, left: 13};
+                                    return <View style={style} />;
+                                }}
                                 renderAboveThumbComponent={renderAboveThumbComponent}
                         />
-                    </View>
+                        </View>                
+                    }
         </SafeAreaView>
     </View>
   )
@@ -72,13 +99,13 @@ const styles = StyleSheet.create({
 const trackMarkStyles = StyleSheet.create({
     activeMark: {
         borderColor: '#6E6E6E',
-        borderRadius: 20,   
+        //borderRadius: 20,   
         borderWidth : 3,
         left: 13,
     },
     inactiveMark: {
         borderColor: '#6E6E6E',
-        borderRadius: 20,
+        //borderRadius: 20,
         borderWidth : 3,
         left: 13,
     },

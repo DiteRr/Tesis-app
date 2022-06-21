@@ -8,6 +8,7 @@ import TabNavigator from "./src/screens/TabNavigator"
 import RegisterEffortsScreen from "./src/screens/RegisterEffortsScreen"
 import Holamundo from "./src/screens/HolaMundo"
 import RegisterInjuriesScreen from "./src/screens/RegisterInjuriesScreen"
+import QuestionaryScreen from './src/screens/QuestionaryScreen'
 
 //Navigator
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -23,11 +24,11 @@ const Stack = createNativeStackNavigator();
 
 function App() {
     
-    const [login, setLogin ] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [id, setUsername ] = useState('')
-    const [refresh_token, setPassword]= useState('')
-    const [access_token, setToken]= useState('')
+    const [login, setLogin ] = React.useState(false)
+    const [loading, setLoading] = React.useState(true)
+    const [id, setUsername ] = React.useState('')
+    const [refresh_token, setPassword]= React.useState('')
+    const [access_token, setToken]= React.useState('')
     
     useEffect(() => {
       
@@ -36,16 +37,16 @@ function App() {
         var username = await AsyncStorage.getItem('username');
         if(username != null){
           //El usuario se logeó anteriormente.
-
           var password = await AsyncStorage.getItem('password');
           var token = await AsyncStorage.getItem('access_token');
+          //await AsyncStorage.setItem('active', '0');
           setLogin(true) 
           setPassword(password)
           setUsername(username)
           setToken(token)
           setLoading(false)
        }else{
-        setLoading(false) 
+          setLoading(false) 
        }
       }
 
@@ -54,7 +55,7 @@ function App() {
     }, []);
 
     if(loading){
-      return( <Text></Text>);
+      return( <Text testID='Texto.Prob'></Text>);
     }
 
     if(login){
@@ -107,6 +108,12 @@ function App() {
               initialParams={{}} 
             />
           </Stack.Navigator>
+          <Stack.Screen 
+              options={{ headerShown: false}} 
+              name="Questionary" 
+              component={QuestionaryScreen}
+              initialParams={{}} 
+            />
         </NavigationContainer>
       );
     }
@@ -155,6 +162,12 @@ function App() {
                 options={{ headerShown: false}} 
                 name="RegisterInjuriesScreen" 
                 component={RegisterInjuriesScreen} 
+                initialParams={{}} 
+              />
+              <Stack.Screen 
+                options={{ headerShown: false}} 
+                name="Questionary" 
+                component={QuestionaryScreen}
                 initialParams={{}} 
               />
             </Stack.Navigator>

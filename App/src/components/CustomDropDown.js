@@ -4,7 +4,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { useEffect } from 'react';
 
 const CustomDropDown = (props) => {
-    const {alternativas, valueChanged}= props;
+    const {alternativas, valueChanged, onFocus, onBlur}= props;
     const [value, setValue] = useState("");
     const [isFocus, setIsFocus] = useState(false);
 
@@ -18,11 +18,11 @@ const CustomDropDown = (props) => {
       ];*/
     
 
-    
+    console.log("CustomDropDown", onFocus)
     return (
       <View style={styles.container}>
         <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+          style={[styles.dropdown, isFocus && { borderColor: `${onFocus}`}, !isFocus && { borderColor: `${onBlur}`}]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}

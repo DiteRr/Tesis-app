@@ -25,8 +25,7 @@ function Holamundo() {
     }
     return (
         <View>
-            <CustomDropDown alternativas={["1","2","3"]}/>
-            <Text>Hola mundo</Text>
+            <Text testID='Text.HolaMundo'>Hola mundo</Text>
             <Button title='Ingresar a strava' color="#841584" onPress={handleClick}></Button>
         </View>
     )
