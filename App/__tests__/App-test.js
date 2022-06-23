@@ -108,7 +108,7 @@ describe("LoginScreen",  () => {
     //expect(component.getByTestId("Loader.LoginScreen")).toBeDefined()
     //console.log("GETBYTESTID", component.getByTestId())
     expect(component.getByTestId("Text.LoginScreen")).toBeDefined()
-    expect(component.getByTestId("ConnectStrava2")).toBeDefined()
+    expect(component.getByTestId("ConnectStrava")).toBeDefined()
   })
 
   it("Autorización aceptada y datos guardados satisfactoriamente", async () => {

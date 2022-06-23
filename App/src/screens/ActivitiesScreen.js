@@ -13,6 +13,7 @@ import moment from "moment";
 import { act } from 'react-test-renderer';
 import {Query} from "../utils/Query"
 import check from "../assets/check.gif"
+import Loader from "react-native-modal-loader";
 
 
 //Canal para la notificaciónes.
@@ -63,7 +64,7 @@ const Item = ({data, navigation, id_user, refresh_token, accessToken}) => {
     const hrDay =moment(data.start_date).local().format('h:mm a')
     const diaSemana =date.getDay()
 
-    const dateString = dias[diaSemana-1]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
+    const dateString = dias[diaSemana]+" "+dia+" de "+meses[mes]+" de "+ano+", "+hrDay
     //---------
 
     //Formato string tiempo de la actividad.
@@ -132,6 +133,7 @@ function ActivitiesScreen({route, navigation}) {
     const [accessToken, setAccessToken] = React.useState(access_token);
     const appState = useRef(AppState.currentState);
     const [appStateVisible, setAppStateVisible] = useState(appState.current);
+    const [loader, setLoader] = useState(false);
     
     console.log("Estado de la aplicación", appState)
     useEffect( ()  => {
@@ -156,6 +158,7 @@ function ActivitiesScreen({route, navigation}) {
 
     //Obtener actividades de los usuarios
     const getActivities = async () => {
+        setLoader(true)
         /*
         //Hora actual
         var dateNow = new Date()
@@ -235,13 +238,13 @@ function ActivitiesScreen({route, navigation}) {
         }
 
         console.log("ActivitiesShow", activitiesShow)
-        if(activitiesShow.length == 0){
-            console.log("DEBERIA PASAR POR ACAAAAAAAAAAA!!!!!!!!!!!!!!!!!1", activitiesShow)
+        if(activitiesShow.length < 1){
             await AsyncStorage.setItem('active', '1');
         }else{
             await AsyncStorage.setItem('active', '0');
         }
 
+        setLoader(false)
         setActivities(activitiesShow)
         setRefreshing(false)
         setLoading(false)
@@ -261,7 +264,7 @@ function ActivitiesScreen({route, navigation}) {
 
     console.log(activities)
     return (
-        <View style={[styles.container, activities.length <= 1 && {justifyContent: "flex-start",}]}>
+        <View style={[styles.container, activities.length < 1 && {justifyContent: "flex-start",}]}>
             <Text testID='Text.Activity' style={styles.titleText}> Actividades última semana. </Text>
             { activities.length < 1 ?
                 <View>
@@ -289,6 +292,7 @@ function ActivitiesScreen({route, navigation}) {
                     }
                 />             
             }
+            <Loader testID="Loader.ActivitiesScreen" loading={loader} color="#FC4C02"/>
 
         </View>
     )

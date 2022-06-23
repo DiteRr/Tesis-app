@@ -67,7 +67,7 @@
       "\\.(css|less)$": "<rootDir>/assetsTransformer.js"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!@react-native|react-native|@miblanchard/react-native-slider/(.*))"
+      "node_modules/(?!@react-native|react-native|radio-buttons-react-native|@miblanchard/react-native-slider/(.*))"
     ]
   }
 }

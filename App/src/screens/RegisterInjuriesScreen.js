@@ -19,9 +19,6 @@ const Item = ({data, navigation, changeResponse}) => {
     return decodeURIComponent(escape(s));
   }
 
-  console.log("ONFOCUS",data.onFocus)
-  console.log("ONBLUR",data.onBlur)
-
   //Preguntas slider
   if(data.tipo_respuesta == "slider"){
     console.log("data_tipo_respuesta", data.tipo_preg)
@@ -44,8 +41,8 @@ const Item = ({data, navigation, changeResponse}) => {
   if(data.tipo_respuesta == "dropdown"){
     return (
         <SafeAreaView>
-            {/*<Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>*/}
-            <Text style={styles.preguntaStyle}> {data.pregunta}</Text>
+            <Text style={styles.preguntaStyle}> {decode_utf8(data.pregunta)}</Text>
+            {/*<Text style={styles.preguntaStyle}> {data.pregunta}</Text>*/}
             <CustomDropDown alternativas={data.alternativas} valueChanged = {(value) => changeResponse(value, data.id_pregunta)} onFocus={data.onFocus} onBlur={data.onBlur}/>
         </SafeAreaView>
         ); 
@@ -111,8 +108,8 @@ function RegisterInjuriesScreen({route, navigation}) {
           var obj = {id_preg: res_pregs['pregs']["preguntas_dropdown"][i]['id_pregunta'], respuesta : ""}
           //Procesar alternativas para que asocie a la data correpondiente a recibir en el CustomDropDown.
           for(var j=0; j<res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'].length; j++){
-            //const json = {label: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']), value: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'])}
-            const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
+            const json = {label: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']), value: decode_utf8(res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'])}
+            //const json = {label: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa'], value: res_pregs['pregs']["preguntas_dropdown"][i]['alternativas'][j]['alternativa']}
             altern.push(json)
           }
 

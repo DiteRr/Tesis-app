@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, LogBox} from 'react-native'
+import { StyleSheet, Text, View, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, LogBox, Image} from 'react-native'
 import React, {useState} from 'react'
 import {useFocusEffect} from '@react-navigation/native'
 import {LineChart} from "react-native-chart-kit";
@@ -25,66 +25,71 @@ const Item = (data) => {
 
     return(
       <View>
-        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>*/}
-        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>
-        <LineChart
-          data={{
-            labels: labels,
-            withLabels: false,
-            datasets: [
-              {
-                data: data["data"]["pregs"]["data"]
+        <Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {decode_utf8(data["data"]["pregs"]["pregunta"])} </Text>
+        {/*<Text style={{ fontSize: 15, textAlign: 'center', paddingTop: 10, color: "#000"}}> {data["data"]["pregs"]["pregunta"]} </Text>*/}
+        <ScrollView 
+          horizontal={true}
+          centerContent = {true}
+        >
+          <LineChart
+            data={{
+              labels: labels,
+              withLabels: false,
+              datasets: [
+                {
+                  data: data["data"]["pregs"]["data"]
+                },
+                {
+                  data : [0], //min
+                  withDots: false,
+                },
+                {
+                  data : [100], //max
+                  withDots: false,
+                },
+              ]
+            }}
+            width={size < 12 ? Dimensions.get("window").width : Dimensions.get("window").width + (size-11)*36 } // from react-native
+            height={315}
+            yAxisInterval={1} // optional, defaults to 1
+            withVerticalLabels={true}
+            verticalLabelRotation={40}
+            yLabelsOffset={10}
+            chartConfig={{
+              backgroundColor: "#FFF",
+              backgroundGradientFrom: "#FFF",
+              backgroundGradientTo: "#FFF",
+              decimalPlaces: 0, // optional, defaults to 2dp
+              color: (opacity = 1) => `rgba(252, 76, 2, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              style: {
+                borderRadius: 16
               },
-              {
-                data : [0], //min
-                withDots: false,
+              propsForDots: {
+                r: "3",
+                strokeWidth: "0",
+                stroke: "#FC4C02"
               },
-              {
-                data : [100], //max
-                withDots: false,
-              },
-            ]
-          }}
-          width={Dimensions.get("window").width} // from react-native
-          height={315}
-          yAxisInterval={1} // optional, defaults to 1
-          withVerticalLabels={true}
-          verticalLabelRotation={35}
-          yLabelsOffset={10}
-          chartConfig={{
-            backgroundColor: "#FFF",
-            backgroundGradientFrom: "#FFF",
-            backgroundGradientTo: "#FFF",
-            decimalPlaces: 0, // optional, defaults to 2dp
-            color: (opacity = 1) => `rgba(252, 76, 2, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: {
+              fillShadowGradient: "#fff",
+              fillShadowGradientFrom: "#fff",
+              fillShadowGradientFromOpacity: 0.6,
+              fillShadowGradientFromOffset: 0,
+              //fillShadowGradientTo: "#fff",
+              //useShadowColorFromDataset: true,
+              fillShadowGradientToOpacity: 0.1,
+              //fillShadowGradientToOffset: 1,
+              //useShadowColorFromDataset: true,
+            }}
+            bezier
+            style={{
+              marginVertical: 0,
               borderRadius: 16
-            },
-            propsForDots: {
-              r: "6",
-              strokeWidth: "0",
-              stroke: "#FC4C02"
-            },
-            fillShadowGradient: "#fff",
-            fillShadowGradientFrom: "#fff",
-            fillShadowGradientFromOpacity: 0.6,
-            fillShadowGradientFromOffset: 0,
-            //fillShadowGradientTo: "#fff",
-            //useShadowColorFromDataset: true,
-            fillShadowGradientToOpacity: 0.1,
-            //fillShadowGradientToOffset: 1,
-            //useShadowColorFromDataset: true,
-          }}
-          bezier
-          style={{
-            marginVertical: 0,
-            borderRadius: 16
-          }}
-        />
+            }}
+          />
+        </ScrollView>
         {/* <Text style={{ fontSize: 13, fontStyle : 'italic', color: "#000", marginBottom: 25, marginLeft: 30}}> {labels[0]}</Text> */}
         {/*<Text style={{ fontSize: 14, fontStyle : 'italic', textAlign: 'center', color: "#000", marginBottom: 25}}> Actividades realizadas</Text>*/}
-      </View>
+     </View>
     )
   }
   else{
@@ -148,6 +153,7 @@ export default function StatisticsScreen({route, navigation}) {
       </View>
     )
   }
+  console.log("Dimensions width", Dimensions.get("window").width)
   return (
     <ScrollView style={{backgroundColor: "#fff"}}>
       <Text style={styles.titleText}>Estadisticas actividades registradas</Text>
@@ -160,7 +166,19 @@ export default function StatisticsScreen({route, navigation}) {
                   ItemSeparatorComponent={renderSeparator}
               />
               :
-              <Text></Text>
+              <View>
+                <Image 
+                    style={styles.image}
+                    source={require('../assets/statistics.png')}
+                />
+              {/*<Image 
+                  style={styles.image}
+                  source={{
+                      uri: 'https://c.tenor.com/_4K_0sndwtEAAAAi/orange-white.gif'
+                  }}
+              />*/}
+              <Text style={{fontSize: 17, fontWeight: "bold", textAlign: 'center'}}> {"\n"} ¡Registra tus primeras actividades para ver tus estadísticas!</Text>
+          </View>
         }
       </View>
     </ScrollView>
@@ -182,4 +200,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center"
   },
+  image: {
+    width: 300,
+    height: 200,
+    marginTop: 100,
+    alignSelf: 'center'
+},
 })

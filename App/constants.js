@@ -1,3 +1,3 @@
 import {API_URI} from "@env"
 
-export const STRAVA_URI = "http://192.168.0.20:5000/"
+export const STRAVA_URI = "http://146.83.216.251/"
